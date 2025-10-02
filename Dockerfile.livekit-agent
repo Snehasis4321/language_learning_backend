@@ -1,0 +1,22 @@
+# Dockerfile for LiveKit Agent (Standalone)
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install pnpm
+RUN npm install -g pnpm
+
+# Copy package files
+COPY package.json pnpm-lock.yaml ./
+
+# Install dependencies (production only)
+RUN pnpm install --frozen-lockfile --prod
+
+# Copy source code
+COPY . .
+
+# Build TypeScript
+RUN pnpm build
+
+# Run standalone agent
+CMD ["node", "dist/agent/standalone/language-teacher.js"]

@@ -1,0 +1,23 @@
+# LiveKit Agent Deployment Configuration
+# Deploy with: lk agent create --config livekit.yaml
+
+# Use custom Dockerfile for agent
+dockerfile: Dockerfile.livekit-agent
+
+# Agent configuration
+agent:
+  # Entry point for the agent
+  entrypoint: node dist/agent/standalone/language-teacher.js
+
+  # Environment variables (add secrets via .env file or --env flag)
+  env:
+    NODE_ENV: production
+
+  # Resource allocation
+  resources:
+    cpu: 1
+    memory: 1Gi
+
+  # Auto-scaling configuration
+  min_instances: 0  # Scale to zero when not in use
+  max_instances: 5  # Maximum concurrent agent instances
