@@ -130,25 +130,54 @@ router.get('/sessions/active', async (_req: Request, res: Response): Promise<voi
 
 /**
  * POST /api/conversation/test-cerebras
- * Test Cerebras API connection
+ * Test Cerebras API connection with conversation memory
  */
 router.post('/test-cerebras', async (req: Request, res: Response): Promise<void> => {
   try {
-    const { message, difficulty = 'beginner', topic } = req.body;
+    const { message, difficulty = 'beginner', topic, history = [] } = req.body;
 
     if (!message) {
       res.status(400).json({ error: 'Message is required' });
       return;
     }
 
-    const response = await cerebrasService.generateResponse(message, [], difficulty, topic);
+    // Compact conversation history if it gets too long (>20 messages = 10 exchanges)
+    let conversationHistory = history;
+    if (history.length > 10) {
+      console.log(`Compacting conversation history from ${history.length} messages...`);
+      conversationHistory = await cerebrasService.compactConversation(
+        history,
+        difficulty,
+        topic,
+        10 // Keep last 10 messages
+      );
+      console.log(`Compacted to ${conversationHistory.length} messages`);
+    }
+
+    // Generate response with conversation history
+    const result = await cerebrasService.generateResponse(
+      message,
+      conversationHistory,
+      difficulty,
+      topic
+    );
+
+    // Build updated history for frontend
+    const updatedHistory = [
+      ...conversationHistory,
+      { role: 'user', content: message },
+      { role: 'assistant', content: result.response },
+    ];
 
     res.json({
       success: true,
       userMessage: message,
-      aiResponse: response,
+      aiResponse: result.response,
       difficulty,
       topic,
+      history: updatedHistory,
+      compacted: history.length > 10,
+      tokenUsage: result.tokenUsage,
     });
   } catch (error) {
     console.error('Error testing Cerebras:', error);

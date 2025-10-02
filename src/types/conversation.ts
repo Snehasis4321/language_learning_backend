@@ -64,3 +64,16 @@ export interface CerebrasResponse {
     total_tokens: number;
   };
 }
+
+export interface TokenUsage {
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
+  estimatedCost: number;
+  model: string;
+}
+
+export interface ResponseWithTokens {
+  response: string;
+  tokenUsage: TokenUsage;
+}
