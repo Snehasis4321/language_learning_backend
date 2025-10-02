@@ -19,17 +19,19 @@ router.post('/start', async (req: Request, res: Response): Promise<void> => {
     // Create session
     const session = sessionStore.create(request);
 
-    // Create LiveKit room
-    await liveKitService.createRoom(session.roomName);
+    // Prepare metadata for the room (agent will read this)
+    const roomMetadata = JSON.stringify({
+      difficulty: session.difficulty,
+      topic: session.topic,
+    });
+
+    // Create LiveKit room with metadata
+    await liveKitService.createRoom(session.roomName, roomMetadata);
 
     // Generate token for user
     const userToken = await liveKitService.generateToken(
       session.roomName,
-      request.userId || 'user',
-      JSON.stringify({
-        difficulty: session.difficulty,
-        topic: session.topic,
-      })
+      request.userId || 'user'
     );
 
     // Notify agent service about the session
