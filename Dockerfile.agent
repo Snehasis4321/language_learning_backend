@@ -1,0 +1,17 @@
+# Dockerfile for LiveKit Agent Worker
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install dependencies
+COPY package.json pnpm-lock.yaml ./
+RUN npm install -g pnpm && pnpm install --frozen-lockfile --prod
+
+# Copy source code
+COPY . .
+
+# Build TypeScript
+RUN pnpm build
+
+# Run agent worker
+CMD ["node", "dist/agent-worker.js"]
