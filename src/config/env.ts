@@ -16,6 +16,11 @@ export const config = {
     apiSecret: process.env.LIVEKIT_API_SECRET || '',
     url: process.env.LIVEKIT_URL || '',
   },
+
+  cartesia: {
+    apiKey: process.env.CARTESIA_API_KEY || '',
+    apiUrl: process.env.CARTESIA_API_URL || 'https://api.cartesia.ai',
+  },
 } as const;
 
 // Validate required environment variables

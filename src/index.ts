@@ -5,6 +5,7 @@ import { config, validateEnv } from './config/env';
 import conversationRoutes from './routes/conversation.routes';
 import { cerebrasService } from './services/cerebras.service';
 import { liveKitService } from './services/livekit.service';
+import { cartesiaService } from './services/cartesia.service';
 
 // Validate environment variables
 validateEnv();
@@ -45,12 +46,14 @@ app.get('/status', async (_req: Request, res: Response): Promise<void> => {
   try {
     const cerebrasConnected = await cerebrasService.testConnection();
     const liveKitConnected = await liveKitService.testConnection();
+    const cartesiaConnected = await cartesiaService.testConnection();
 
     res.json({
       status: 'operational',
       services: {
         cerebras: cerebrasConnected ? 'connected' : 'disconnected',
         livekit: liveKitConnected ? 'connected' : 'disconnected',
+        cartesia: cartesiaConnected ? 'connected' : 'disconnected',
       },
       timestamp: new Date().toISOString(),
     });

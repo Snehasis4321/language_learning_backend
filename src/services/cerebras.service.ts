@@ -15,8 +15,8 @@ export class CerebrasService {
 
   // Pricing per 1M tokens (in USD)
   private readonly pricing = {
-    'llama3.3-70b': { input: 0.60, output: 0.60 },
-    'llama3.1-8b': { input: 0.10, output: 0.10 },
+    'llama3.3-70b': { input: 0.6, output: 0.6 },
+    'llama3.1-8b': { input: 0.1, output: 0.1 },
   };
 
   constructor() {
@@ -187,7 +187,7 @@ IMPORTANT GUARDRAILS - You must ONLY act as a language teacher:
 Keep the summary brief (2-3 sentences) but informative.`;
 
     const conversationText = conversationHistory
-      .map((msg) => `${msg.role === 'user' ? 'Student' : 'Teacher'}: ${msg.content}`)
+      .map(msg => `${msg.role === 'user' ? 'Student' : 'Teacher'}: ${msg.content}`)
       .join('\n');
 
     const messages: CerebrasMessage[] = [

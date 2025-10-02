@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { liveKitService, sessionStore } from '../services/livekit.service';
 import { cerebrasService } from '../services/cerebras.service';
+import { cartesiaService } from '../services/cartesia.service';
 import { StartConversationRequest, StartConversationResponse } from '../types/conversation';
 import { config } from '../config/env';
 
@@ -183,6 +184,40 @@ router.post('/test-cerebras', async (req: Request, res: Response): Promise<void>
     console.error('Error testing Cerebras:', error);
     res.status(500).json({
       error: 'Cerebras test failed',
+      message: error instanceof Error ? error.message : 'Unknown error',
+    });
+  }
+});
+
+/**
+ * POST /api/conversation/tts
+ * Generate text-to-speech audio
+ */
+router.post('/tts', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { text, voiceId } = req.body;
+
+    if (!text) {
+      res.status(400).json({ error: 'Text is required' });
+      return;
+    }
+
+    console.log(`🔊 Generating TTS for: "${text.substring(0, 50)}..."`);
+
+    // Generate audio using Cartesia
+    const audioBuffer = await cartesiaService.generateSpeech(text, voiceId);
+
+    // Set appropriate headers for audio streaming
+    res.setHeader('Content-Type', 'audio/mpeg');
+    res.setHeader('Content-Length', audioBuffer.length);
+    res.setHeader('Cache-Control', 'public, max-age=3600'); // Cache for 1 hour
+
+    // Send audio data
+    res.send(audioBuffer);
+  } catch (error) {
+    console.error('Error generating TTS:', error);
+    res.status(500).json({
+      error: 'TTS generation failed',
       message: error instanceof Error ? error.message : 'Unknown error',
     });
   }
