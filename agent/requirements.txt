@@ -1,6 +1,0 @@
-# LiveKit Agent dependencies
-livekit
-livekit-agents
-livekit-plugins-openai
-python-dotenv
-requests

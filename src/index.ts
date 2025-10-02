@@ -6,6 +6,7 @@ import conversationRoutes from './routes/conversation.routes';
 import { cerebrasService } from './services/cerebras.service';
 import { liveKitService } from './services/livekit.service';
 import { cartesiaService } from './services/cartesia.service';
+import { agentService } from './services/agent.service';
 
 // Validate environment variables
 validateEnv();
@@ -88,7 +89,7 @@ app.use((err: Error, _req: Request, res: Response, _next: NextFunction): void =>
 // Start server
 const PORT = config.port;
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log('='.repeat(50));
   console.log(`🚀 Language Learning Backend Server`);
   console.log('='.repeat(50));
@@ -106,6 +107,16 @@ app.listen(PORT, () => {
   console.log('\n🧪 Test Pages:');
   console.log(`  Voice Test: http://localhost:${PORT}/test-voice.html`);
   console.log('\n✨ Server is ready to accept requests!\n');
+
+  // Start the LiveKit agent worker
+  console.log('🤖 Starting LiveKit Agent Worker...');
+  try {
+    await agentService.startWorker();
+    console.log('✅ Agent worker is running and ready to handle voice sessions\n');
+  } catch (error) {
+    console.error('❌ Failed to start agent worker:', error);
+    console.error('   Voice chat features may not work correctly\n');
+  }
 });
 
 // Graceful shutdown

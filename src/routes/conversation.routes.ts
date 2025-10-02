@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { liveKitService, sessionStore } from '../services/livekit.service';
 import { cerebrasService } from '../services/cerebras.service';
 import { cartesiaService } from '../services/cartesia.service';
+import { agentService } from '../services/agent.service';
 import { StartConversationRequest, StartConversationResponse } from '../types/conversation';
 import { config } from '../config/env';
 
@@ -31,8 +32,12 @@ router.post('/start', async (req: Request, res: Response): Promise<void> => {
       })
     );
 
-    // TODO: Spawn AI agent (will implement in next step)
-    // For now, we'll just return the room info for manual testing
+    // Notify agent service about the session
+    await agentService.notifySessionStart(
+      session.roomName,
+      session.difficulty,
+      session.topic
+    );
 
     const response: StartConversationResponse = {
       sessionId: session.id,
@@ -67,6 +72,9 @@ router.post('/:sessionId/end', async (req: Request, res: Response): Promise<void
 
     // Mark session as ended
     sessionStore.end(sessionId);
+
+    // Notify agent service about session end
+    await agentService.notifySessionEnd(session.roomName);
 
     // Delete the room
     await liveKitService.deleteRoom(session.roomName);
