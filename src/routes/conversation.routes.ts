@@ -72,21 +72,32 @@ router.post('/:sessionId/end', async (req: Request, res: Response): Promise<void
       return;
     }
 
+    // Check if already ended
+    if (session.endedAt) {
+      res.json({
+        message: 'Session already ended',
+        sessionId,
+        duration: Math.floor((session.endedAt.getTime() - session.createdAt.getTime()) / 1000),
+      });
+      return;
+    }
+
     // Mark session as ended
     sessionStore.end(sessionId);
 
     // Notify agent service about session end
     await agentService.notifySessionEnd(session.roomName);
 
-    // Delete the room
+    // Delete the room (ignore errors if already deleted)
     await liveKitService.deleteRoom(session.roomName);
 
+    const updatedSession = sessionStore.get(sessionId);
     res.json({
       message: 'Session ended successfully',
       sessionId,
       duration:
-        session.endedAt && session.createdAt
-          ? Math.floor((session.endedAt.getTime() - session.createdAt.getTime()) / 1000)
+        updatedSession?.endedAt && updatedSession.createdAt
+          ? Math.floor((updatedSession.endedAt.getTime() - updatedSession.createdAt.getTime()) / 1000)
           : 0,
     });
   } catch (error) {
