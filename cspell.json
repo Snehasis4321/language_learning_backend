@@ -1,0 +1,33 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "words": [
+    "Cerebras",
+    "cerebras",
+    "Cartesia",
+    "cartesia",
+    "livekit",
+    "LiveKit",
+    "LIVEKIT",
+    "dotenv",
+    "uuidv4",
+    "VARCHAR",
+    "JSONB",
+    "roleplay",
+    "conv",
+    "postgres",
+    "postgresql",
+    "pnpm",
+    "llama",
+    "CEREBRAS",
+    "CARTESIA",
+    "supercede"
+  ],
+  "ignorePaths": [
+    "node_modules",
+    "dist",
+    "pnpm-lock.yaml",
+    "package-lock.json",
+    "*.log"
+  ]
+}
