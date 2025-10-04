@@ -4,6 +4,7 @@ import path from 'path';
 import { config, validateEnv } from './config/env';
 import conversationRoutes from './routes/conversation.routes';
 import userRoutes from './routes/user.routes';
+import authRoutes from './routes/auth.routes';
 import { cerebrasService } from './services/cerebras.service';
 import { liveKitService } from './services/livekit.service';
 import { cartesiaService } from './services/cartesia.service';
@@ -68,6 +69,7 @@ app.get('/status', async (_req: Request, res: Response): Promise<void> => {
 });
 
 // API routes
+app.use('/api/auth', authRoutes);
 app.use('/api/conversation', conversationRoutes);
 app.use('/api/users', userRoutes);
 

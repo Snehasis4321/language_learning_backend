@@ -6,6 +6,8 @@ import { agentService } from '../services/agent.service';
 import { UserService } from '../services/user.service';
 import { StartConversationRequest, StartConversationResponse } from '../types/conversation';
 import { config } from '../config/env';
+import { optionalAuth, AuthRequest } from '../middleware/auth.middleware';
+import { dbService } from '../services/db.service';
 
 const router: Router = Router();
 
@@ -13,25 +15,37 @@ const router: Router = Router();
  * POST /api/conversation/start
  * Start a new conversation session
  */
-router.post('/start', async (req: Request, res: Response): Promise<void> => {
+router.post('/start', optionalAuth, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const request: StartConversationRequest = req.body;
+    const userId = req.user?.uid || request.userId;
 
     // Create session
     const session = sessionStore.create(request);
 
     // Get personalized system prompt if userId is provided
     let customSystemPrompt: string | undefined;
-    if (request.userId) {
-      customSystemPrompt = UserService.getPersonalizedSystemPrompt(request.userId);
-      console.log(`✨ Using personalized system prompt for user: ${request.userId}`);
+    if (userId) {
+      customSystemPrompt = UserService.getPersonalizedSystemPrompt(userId);
+      console.log(`✨ Using personalized system prompt for user: ${userId}`);
+    }
+
+    // Save session to database if user is authenticated
+    if (userId) {
+      await dbService.createSession({
+        id: session.id,
+        user_id: userId,
+        difficulty: session.difficulty,
+        topic: session.topic,
+        room_name: session.roomName,
+      });
     }
 
     // Prepare metadata for the room (agent will read this)
     const roomMetadata = JSON.stringify({
       difficulty: session.difficulty,
       topic: session.topic,
-      userId: request.userId,
+      userId: userId,
       customSystemPrompt,
     });
 
@@ -41,7 +55,7 @@ router.post('/start', async (req: Request, res: Response): Promise<void> => {
     // Generate token for user
     const userToken = await liveKitService.generateToken(
       session.roomName,
-      request.userId || 'user'
+      userId || 'user'
     );
 
     // Notify agent service about the session
@@ -73,7 +87,7 @@ router.post('/start', async (req: Request, res: Response): Promise<void> => {
  * POST /api/conversation/:sessionId/end
  * End a conversation session
  */
-router.post('/:sessionId/end', async (req: Request, res: Response): Promise<void> => {
+router.post('/:sessionId/end', optionalAuth, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { sessionId } = req.params;
     const session = sessionStore.get(sessionId);
@@ -81,6 +95,11 @@ router.post('/:sessionId/end', async (req: Request, res: Response): Promise<void
     if (!session) {
       res.status(404).json({ error: 'Session not found' });
       return;
+    }
+
+    // End session in database if it exists
+    if (req.user) {
+      await dbService.endSession(sessionId);
     }
 
     // Mark session as ended
