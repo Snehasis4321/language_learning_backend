@@ -38,6 +38,8 @@ router.post('/profile', (req: Request, res: Response) => {
 /**
  * GET /api/users/profile/:userId
  * Get user profile by ID
+ * - For authenticated users: returns from database
+ * - For guest users: returns 404 (expected behavior - guests use localStorage)
  */
 router.get('/profile/:userId', (req: Request, res: Response) => {
   try {
@@ -47,12 +49,14 @@ router.get('/profile/:userId', (req: Request, res: Response) => {
     if (!userProfile) {
       res.status(404).json({
         error: 'User profile not found',
+        isGuest: true, // Indicates this is likely a guest user
       });
       return;
     }
 
     res.json({
       success: true,
+      isGuest: false,
       user: userProfile,
     });
   } catch (error) {
@@ -67,6 +71,8 @@ router.get('/profile/:userId', (req: Request, res: Response) => {
 /**
  * PUT /api/users/preferences
  * Update user preferences
+ * - For authenticated users: saves to database
+ * - For guest users: returns preferences for localStorage storage
  */
 router.put('/preferences', (req: Request, res: Response) => {
   try {
@@ -82,14 +88,24 @@ router.put('/preferences', (req: Request, res: Response) => {
     const userProfile = UserService.updateUserPreferences(request);
 
     if (!userProfile) {
-      res.status(404).json({
-        error: 'User not found',
+      // Guest user - not in database, just return preferences for localStorage
+      console.log('👤 Guest user preferences update:', request.userId);
+      res.json({
+        success: true,
+        isGuest: true,
+        user: {
+          id: request.userId,
+          preferences: request.preferences,
+          updatedAt: new Date(),
+        },
       });
       return;
     }
 
+    // Authenticated user - saved to database
     res.json({
       success: true,
+      isGuest: false,
       user: userProfile,
     });
   } catch (error) {

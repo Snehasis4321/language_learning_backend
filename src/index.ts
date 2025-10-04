@@ -1,5 +1,6 @@
 import express, { Request, Response, NextFunction, Express } from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import path from 'path';
 import { config, validateEnv } from './config/env';
 import conversationRoutes from './routes/conversation.routes';
@@ -16,6 +17,9 @@ validateEnv();
 const app: Express = express();
 
 // Middleware
+// Security headers with helmet
+app.use(helmet());
+
 app.use(
   cors({
     origin: '*', // Update this in production to specific origins

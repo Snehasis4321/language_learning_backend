@@ -1,9 +1,20 @@
 const { RoomServiceClient } = require('livekit-server-sdk');
 
+// Validate required environment variables
+if (!process.env.LIVEKIT_URL) {
+  throw new Error('LIVEKIT_URL environment variable is required');
+}
+if (!process.env.LIVEKIT_API_KEY) {
+  throw new Error('LIVEKIT_API_KEY environment variable is required');
+}
+if (!process.env.LIVEKIT_API_SECRET) {
+  throw new Error('LIVEKIT_API_SECRET environment variable is required');
+}
+
 const client = new RoomServiceClient(
-  process.env.LIVEKIT_URL || 'wss://james-amnjy8db.livekit.cloud',
-  process.env.LIVEKIT_API_KEY || 'APIT6pKiQwTmtP6',
-  process.env.LIVEKIT_API_SECRET || 'XDfjcvkW9PqnwhmBrDidaXkbFr3XKGLertEfURFW5PbA'
+  process.env.LIVEKIT_URL,
+  process.env.LIVEKIT_API_KEY,
+  process.env.LIVEKIT_API_SECRET
 );
 
 async function cleanupRooms() {
