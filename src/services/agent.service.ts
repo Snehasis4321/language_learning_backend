@@ -84,11 +84,18 @@ export class AgentService {
    * Notify that a session is starting (for logging/tracking)
    * The LiveKit agent worker will automatically handle the room
    */
-  async notifySessionStart(roomName: string, difficulty: string, topic?: string): Promise<void> {
+  async notifySessionStart(
+    roomName: string,
+    difficulty: string,
+    topic?: string,
+    customSystemPrompt?: string
+  ): Promise<void> {
     console.log(`📢 Session starting: ${roomName}`);
     console.log(`   Difficulty: ${difficulty}`);
     if (topic) console.log(`   Topic: ${topic}`);
+    if (customSystemPrompt) console.log(`   ✨ Using personalized system prompt`);
     console.log('   Worker will automatically join the room');
+    // Note: customSystemPrompt is passed via room metadata
   }
 
   /**

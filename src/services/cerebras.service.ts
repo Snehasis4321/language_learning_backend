@@ -45,9 +45,11 @@ export class CerebrasService {
     userMessage: string,
     conversationHistory: CerebrasMessage[] = [],
     difficulty: DifficultyLevel = 'beginner',
-    topic?: string
+    topic?: string,
+    customSystemPrompt?: string
   ): Promise<ResponseWithTokens> {
-    const systemPrompt = this.buildSystemPrompt(difficulty, topic);
+    // Use custom system prompt if provided, otherwise build default one
+    const systemPrompt = customSystemPrompt || this.buildSystemPrompt(difficulty, topic);
 
     const messages: CerebrasMessage[] = [
       { role: 'system', content: systemPrompt },

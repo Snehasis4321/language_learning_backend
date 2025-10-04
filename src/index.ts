@@ -3,6 +3,7 @@ import cors from 'cors';
 import path from 'path';
 import { config, validateEnv } from './config/env';
 import conversationRoutes from './routes/conversation.routes';
+import userRoutes from './routes/user.routes';
 import { cerebrasService } from './services/cerebras.service';
 import { liveKitService } from './services/livekit.service';
 import { cartesiaService } from './services/cartesia.service';
@@ -68,6 +69,7 @@ app.get('/status', async (_req: Request, res: Response): Promise<void> => {
 
 // API routes
 app.use('/api/conversation', conversationRoutes);
+app.use('/api/users', userRoutes);
 
 // 404 handler
 app.use((req: Request, res: Response): void => {
@@ -99,11 +101,18 @@ app.listen(PORT, async () => {
   console.log(`Status check: http://localhost:${PORT}/status`);
   console.log('='.repeat(50));
   console.log('\n📋 Available endpoints:');
-  console.log('  POST   /api/conversation/start');
-  console.log('  POST   /api/conversation/:id/end');
-  console.log('  GET    /api/conversation/:id');
-  console.log('  GET    /api/conversation/sessions/active');
-  console.log('  POST   /api/conversation/test-cerebras');
+  console.log('  Conversations:');
+  console.log('    POST   /api/conversation/start');
+  console.log('    POST   /api/conversation/:id/end');
+  console.log('    GET    /api/conversation/:id');
+  console.log('    GET    /api/conversation/sessions/active');
+  console.log('    POST   /api/conversation/test-cerebras');
+  console.log('  Users:');
+  console.log('    POST   /api/users/profile');
+  console.log('    GET    /api/users/profile/:userId');
+  console.log('    PUT    /api/users/preferences');
+  console.log('    GET    /api/users/progress/:userId');
+  console.log('    POST   /api/users/progress/:userId');
   console.log('\n🧪 Test Pages:');
   console.log(`  Voice Test: http://localhost:${PORT}/test-voice.html`);
   console.log('\n✨ Server is ready to accept requests!\n');

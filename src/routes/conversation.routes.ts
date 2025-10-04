@@ -3,6 +3,7 @@ import { liveKitService, sessionStore } from '../services/livekit.service';
 import { cerebrasService } from '../services/cerebras.service';
 import { cartesiaService } from '../services/cartesia.service';
 import { agentService } from '../services/agent.service';
+import { UserService } from '../services/user.service';
 import { StartConversationRequest, StartConversationResponse } from '../types/conversation';
 import { config } from '../config/env';
 
@@ -19,10 +20,19 @@ router.post('/start', async (req: Request, res: Response): Promise<void> => {
     // Create session
     const session = sessionStore.create(request);
 
+    // Get personalized system prompt if userId is provided
+    let customSystemPrompt: string | undefined;
+    if (request.userId) {
+      customSystemPrompt = UserService.getPersonalizedSystemPrompt(request.userId);
+      console.log(`✨ Using personalized system prompt for user: ${request.userId}`);
+    }
+
     // Prepare metadata for the room (agent will read this)
     const roomMetadata = JSON.stringify({
       difficulty: session.difficulty,
       topic: session.topic,
+      userId: request.userId,
+      customSystemPrompt,
     });
 
     // Create LiveKit room with metadata
@@ -38,7 +48,8 @@ router.post('/start', async (req: Request, res: Response): Promise<void> => {
     await agentService.notifySessionStart(
       session.roomName,
       session.difficulty,
-      session.topic
+      session.topic,
+      customSystemPrompt
     );
 
     const response: StartConversationResponse = {
@@ -145,11 +156,18 @@ router.get('/sessions/active', async (_req: Request, res: Response): Promise<voi
  */
 router.post('/test-cerebras', async (req: Request, res: Response): Promise<void> => {
   try {
-    const { message, difficulty = 'beginner', topic, history = [] } = req.body;
+    const { message, difficulty = 'beginner', topic, history = [], userId } = req.body;
 
     if (!message) {
       res.status(400).json({ error: 'Message is required' });
       return;
+    }
+
+    // Get personalized system prompt if userId is provided
+    let customSystemPrompt: string | undefined;
+    if (userId) {
+      customSystemPrompt = UserService.getPersonalizedSystemPrompt(userId);
+      console.log(`✨ Using personalized system prompt for user: ${userId}`);
     }
 
     // Compact conversation history if it gets too long (>20 messages = 10 exchanges)
@@ -165,12 +183,13 @@ router.post('/test-cerebras', async (req: Request, res: Response): Promise<void>
       console.log(`Compacted to ${conversationHistory.length} messages`);
     }
 
-    // Generate response with conversation history
+    // Generate response with conversation history and optional custom prompt
     const result = await cerebrasService.generateResponse(
       message,
       conversationHistory,
       difficulty,
-      topic
+      topic,
+      customSystemPrompt
     );
 
     // Build updated history for frontend
@@ -189,6 +208,7 @@ router.post('/test-cerebras', async (req: Request, res: Response): Promise<void>
       history: updatedHistory,
       compacted: history.length > 10,
       tokenUsage: result.tokenUsage,
+      personalizedPrompt: !!customSystemPrompt,
     });
   } catch (error) {
     console.error('Error testing Cerebras:', error);

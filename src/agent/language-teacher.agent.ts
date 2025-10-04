@@ -43,8 +43,14 @@ class LanguageTeacherAgent extends voice.Agent {
   private conversationHistory: CerebrasMessage[] = [];
   private difficulty: DifficultyLevel = 'beginner';
   private topic?: string;
+  private customSystemPrompt?: string;
 
-  constructor(instructions: string, difficulty: DifficultyLevel, topic?: string) {
+  constructor(
+    instructions: string,
+    difficulty: DifficultyLevel,
+    topic?: string,
+    customSystemPrompt?: string
+  ) {
     super({
       instructions,
       stt: new STT({ model: 'whisper-1' }),
@@ -54,6 +60,7 @@ class LanguageTeacherAgent extends voice.Agent {
 
     this.difficulty = difficulty;
     this.topic = topic;
+    this.customSystemPrompt = customSystemPrompt;
 
     // Initialize with system prompt
     this.conversationHistory.push({
@@ -89,12 +96,13 @@ class LanguageTeacherAgent extends voice.Agent {
         content: userText,
       });
 
-      // Generate response using Cerebras
+      // Generate response using Cerebras with optional custom system prompt
       const result = await cerebrasService.generateResponse(
         userText,
         this.conversationHistory.slice(1, -1), // Exclude system and current user message
         this.difficulty,
-        this.topic
+        this.topic,
+        this.customSystemPrompt
       );
 
       // Add assistant response to history
@@ -140,20 +148,39 @@ class LanguageTeacherAgent extends voice.Agent {
  * Factory function to create agent instances
  * This is called by the worker for each room connection
  */
-async function createAgent(): Promise<voice.Agent> {
+async function createAgent(jobCtx?: any): Promise<voice.Agent> {
   // Default settings
-  const difficulty: DifficultyLevel = 'beginner';
-  const topic: string | undefined = undefined;
+  let difficulty: DifficultyLevel = 'beginner';
+  let topic: string | undefined = undefined;
+  let customSystemPrompt: string | undefined = undefined;
 
-  // TODO: Get metadata from room/participant when available
-  // For now, using defaults
+  // Try to get metadata from room if job context is available
+  if (jobCtx?.room?.metadata) {
+    try {
+      const metadata = JSON.parse(jobCtx.room.metadata);
+      difficulty = (metadata.difficulty as DifficultyLevel) || difficulty;
+      topic = metadata.topic;
+      customSystemPrompt = metadata.customSystemPrompt;
 
-  const instructions = buildSystemPrompt(difficulty, topic);
-  const agent = new LanguageTeacherAgent(instructions, difficulty, topic);
+      console.log('📦 Room metadata loaded:');
+      console.log(`   Difficulty: ${difficulty}`);
+      if (topic) console.log(`   Topic: ${topic}`);
+      if (customSystemPrompt) {
+        console.log(`   ✨ Custom system prompt provided (${customSystemPrompt.length} chars)`);
+      }
+    } catch (error) {
+      console.error('Failed to parse room metadata:', error);
+    }
+  }
+
+  // Use custom prompt if provided, otherwise build default
+  const instructions = customSystemPrompt || buildSystemPrompt(difficulty, topic);
+  const agent = new LanguageTeacherAgent(instructions, difficulty, topic, customSystemPrompt);
 
   console.log('🤖 Language Teacher Agent created');
   console.log(`   Difficulty: ${difficulty}`);
   if (topic) console.log(`   Topic: ${topic}`);
+  if (customSystemPrompt) console.log(`   ✨ Using personalized instructions`);
 
   return agent;
 }
