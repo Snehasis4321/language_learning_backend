@@ -1,8 +1,8 @@
-import express, { Request, Response } from 'express';
+import express, { Request, Response, Router } from 'express';
 import { UserService } from '../services/user.service';
 import { CreateUserProfileRequest, UpdateUserPreferencesRequest } from '../types/user';
 
-const router = express.Router();
+const router: Router = express.Router();
 
 /**
  * POST /api/users/profile

@@ -121,20 +121,20 @@ app.listen(PORT, async () => {
 
   // Optional: Start the LiveKit agent worker with the backend
   // In production, run the agent as a separate service using: pnpm start:agent
-  const startAgentWithBackend = process.env.START_AGENT_WITH_BACKEND === 'true';
+  // const startAgentWithBackend = process.env.START_AGENT_WITH_BACKEND === 'true';
 
-  if (startAgentWithBackend) {
-    console.log('🤖 Starting LiveKit Agent Worker...');
-    try {
-      await agentService.startWorker();
-      console.log('✅ Agent worker is running and ready to handle voice sessions\n');
-    } catch (error) {
-      console.error('❌ Failed to start agent worker:', error);
-      console.error('   Voice chat features may not work correctly\n');
-    }
-  } else {
-    console.log('ℹ️  Agent worker not started (run separately with: pnpm start:agent)\n');
-  }
+  // if (startAgentWithBackend) {
+  //   console.log('🤖 Starting LiveKit Agent Worker...');
+  //   try {
+  //     await agentService.startWorker();
+  //     console.log('✅ Agent worker is running and ready to handle voice sessions\n');
+  //   } catch (error) {
+  //     console.error('❌ Failed to start agent worker:', error);
+  //     console.error('   Voice chat features may not work correctly\n');
+  //   }
+  // } else {
+  //   console.log('ℹ️  Agent worker not started (run separately with: pnpm start:agent)\n');
+  // }
 });
 
 // Graceful shutdown

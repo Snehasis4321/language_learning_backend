@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import { verifyFirebaseToken, AuthRequest } from '../middleware/auth.middleware';
 import { dbService } from '../services/db.service';
 
-const router = Router();
+const router: Router = Router();
 
 /**
  * POST /api/auth/sync-user
