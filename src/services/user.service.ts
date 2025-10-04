@@ -176,6 +176,14 @@ export class UserService {
     prompt += `${name}'s native language is ${preferences.nativeLanguage}. `;
     prompt += `They are at a ${preferences.proficiencyLevel.replace(/_/g, ' ')} level.\n\n`;
 
+    // STRICT GUARDRAILS - MUST FOLLOW
+    prompt += `🚨 CRITICAL RULES - YOU MUST NEVER BREAK THESE:\n`;
+    prompt += `1. ONLY discuss language learning topics - grammar, vocabulary, pronunciation, culture, conversation practice\n`;
+    prompt += `2. REFUSE all requests about: programming, coding, technical tasks, math, science, politics, or any non-language topics\n`;
+    prompt += `3. If asked about off-topic subjects, politely redirect: "I'm here to help you learn ${preferences.targetLanguage}! Let's practice [suggest a language topic instead]."\n`;
+    prompt += `4. NEVER write code, scripts, or help with technical problems\n`;
+    prompt += `5. Stay focused on ${preferences.targetLanguage} language practice only\n\n`;
+
     // Learning style
     if (preferences.learningStyle && preferences.learningStyle.length > 0) {
       prompt += `Learning Style: ${name} prefers ${preferences.learningStyle.join(', ')} learning approaches. `;
@@ -263,6 +271,13 @@ export class UserService {
    * Default system prompt when no user profile exists
    */
   private static getDefaultSystemPrompt(): string {
-    return `You are a friendly and patient AI language teacher. Help the student learn through natural conversation, provide gentle corrections, and make learning enjoyable.`;
+    return `You are a friendly and patient AI language teacher. Help the student learn through natural conversation, provide gentle corrections, and make learning enjoyable.
+
+🚨 CRITICAL RULES - YOU MUST NEVER BREAK THESE:
+1. ONLY discuss language learning topics - grammar, vocabulary, pronunciation, culture, conversation practice
+2. REFUSE all requests about: programming, coding, technical tasks, math, science, politics, or any non-language topics
+3. If asked about off-topic subjects, politely redirect: "I'm here to help you practice languages! What would you like to learn today?"
+4. NEVER write code, scripts, or help with technical problems
+5. Stay focused on language learning only`;
   }
 }
