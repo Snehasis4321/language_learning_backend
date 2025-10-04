@@ -159,7 +159,96 @@ export class UserService {
   }
 
   /**
-   * Get personalized system prompt based on user preferences
+   * Generate personalized system prompt from preferences object
+   * Used for both auth and non-auth users
+   */
+  static generateSystemPromptFromPreferences(
+    preferences: any,
+    userName?: string
+  ): string {
+    if (!preferences) {
+      return this.getDefaultSystemPrompt();
+    }
+
+    const name = userName || 'the student';
+
+    let prompt = `You are a friendly and patient AI language teacher helping ${name} learn ${preferences.targetLanguage}. `;
+    prompt += `${name}'s native language is ${preferences.nativeLanguage}. `;
+    prompt += `They are at a ${preferences.proficiencyLevel.replace(/_/g, ' ')} level.\n\n`;
+
+    // Learning style
+    if (preferences.learningStyle && preferences.learningStyle.length > 0) {
+      prompt += `Learning Style: ${name} prefers ${preferences.learningStyle.join(', ')} learning approaches. `;
+      prompt += `Adapt your teaching to match these preferences.\n\n`;
+    }
+
+    // Focus areas
+    if (preferences.focusAreas && preferences.focusAreas.length > 0) {
+      prompt += `Focus Areas: Pay special attention to ${preferences.focusAreas.join(', ')}. `;
+      prompt += `Help ${name} improve in these areas during conversations.\n\n`;
+    }
+
+    // Topics of interest
+    if (preferences.topicsOfInterest && preferences.topicsOfInterest.length > 0) {
+      prompt += `Topics of Interest: ${name} is interested in topics like: ${preferences.topicsOfInterest.join(', ')}. `;
+      prompt += `Try to incorporate these topics into your conversations when appropriate.\n\n`;
+    }
+
+    // Learning goals
+    if (preferences.learningGoals && preferences.learningGoals.length > 0) {
+      const goals = preferences.learningGoals.map((g: string) => g.replace(/_/g, ' ')).join(', ');
+      prompt += `Learning Goals: ${name} wants to learn ${preferences.targetLanguage} for: ${goals}. `;
+      prompt += `Keep these goals in mind when providing exercises and practice.\n\n`;
+    }
+
+    // Correction style
+    if (preferences.correctionStyle) {
+      prompt += `Correction Style: `;
+      switch (preferences.correctionStyle) {
+        case 'immediate':
+          prompt += `Correct mistakes immediately during the conversation. `;
+          break;
+        case 'end_of_conversation':
+          prompt += `Take note of mistakes but provide corrections at the end of the conversation. `;
+          break;
+        case 'gentle':
+          prompt += `Provide gentle hints without explicitly pointing out mistakes. `;
+          break;
+        case 'detailed':
+          prompt += `Provide detailed explanations when correcting mistakes. `;
+          break;
+      }
+      prompt += `\n\n`;
+    }
+
+    // Voice speed
+    if (preferences.preferredVoiceSpeed) {
+      prompt += `Speaking Style: `;
+      switch (preferences.preferredVoiceSpeed) {
+        case 'very_slow':
+          prompt += `Speak very slowly and clearly, as ${name} is still building listening skills. `;
+          break;
+        case 'slow':
+          prompt += `Speak slowly and enunciate clearly. `;
+          break;
+        case 'normal':
+          prompt += `Speak at a normal, conversational pace. `;
+          break;
+        case 'fast':
+          prompt += `Speak at a natural, native speaker pace. `;
+          break;
+      }
+      prompt += `\n\n`;
+    }
+
+    prompt += `Remember to be encouraging, patient, and supportive. Make learning fun and engaging!`;
+
+    return prompt;
+  }
+
+  /**
+   * Get personalized system prompt based on user preferences (legacy - for backward compatibility)
+   * Fetches user from DB and generates prompt
    */
   static getPersonalizedSystemPrompt(userId: string): string {
     const user = users.get(userId);
@@ -167,77 +256,7 @@ export class UserService {
       return this.getDefaultSystemPrompt();
     }
 
-    const { preferences } = user;
-    const userName = user.name;
-
-    let prompt = `You are a friendly and patient AI language teacher helping ${userName} learn ${preferences.targetLanguage}. `;
-    prompt += `${userName}'s native language is ${preferences.nativeLanguage}. `;
-    prompt += `They are at a ${preferences.proficiencyLevel.replace(/_/g, ' ')} level.\n\n`;
-
-    // Learning style
-    if (preferences.learningStyle.length > 0) {
-      prompt += `Learning Style: ${userName} prefers ${preferences.learningStyle.join(', ')} learning approaches. `;
-      prompt += `Adapt your teaching to match these preferences.\n\n`;
-    }
-
-    // Focus areas
-    if (preferences.focusAreas.length > 0) {
-      prompt += `Focus Areas: Pay special attention to ${preferences.focusAreas.join(', ')}. `;
-      prompt += `Help ${userName} improve in these areas during conversations.\n\n`;
-    }
-
-    // Topics of interest
-    if (preferences.topicsOfInterest.length > 0) {
-      prompt += `Topics of Interest: ${userName} is interested in topics like: ${preferences.topicsOfInterest.join(', ')}. `;
-      prompt += `Try to incorporate these topics into your conversations when appropriate.\n\n`;
-    }
-
-    // Learning goals
-    if (preferences.learningGoals.length > 0) {
-      const goals = preferences.learningGoals.map((g) => g.replace(/_/g, ' ')).join(', ');
-      prompt += `Learning Goals: ${userName} wants to learn ${preferences.targetLanguage} for: ${goals}. `;
-      prompt += `Keep these goals in mind when providing exercises and practice.\n\n`;
-    }
-
-    // Correction style
-    prompt += `Correction Style: `;
-    switch (preferences.correctionStyle) {
-      case 'immediate':
-        prompt += `Correct mistakes immediately during the conversation. `;
-        break;
-      case 'end_of_conversation':
-        prompt += `Take note of mistakes but provide corrections at the end of the conversation. `;
-        break;
-      case 'gentle':
-        prompt += `Provide gentle hints without explicitly pointing out mistakes. `;
-        break;
-      case 'detailed':
-        prompt += `Provide detailed explanations when correcting mistakes. `;
-        break;
-    }
-    prompt += `\n\n`;
-
-    // Voice speed
-    prompt += `Speaking Style: `;
-    switch (preferences.preferredVoiceSpeed) {
-      case 'very_slow':
-        prompt += `Speak very slowly and clearly, as ${userName} is still building listening skills. `;
-        break;
-      case 'slow':
-        prompt += `Speak slowly and enunciate clearly. `;
-        break;
-      case 'normal':
-        prompt += `Speak at a normal, conversational pace. `;
-        break;
-      case 'fast':
-        prompt += `Speak at a natural, native speaker pace. `;
-        break;
-    }
-    prompt += `\n\n`;
-
-    prompt += `Remember to be encouraging, patient, and supportive. Make learning fun and engaging!`;
-
-    return prompt;
+    return this.generateSystemPromptFromPreferences(user.preferences, user.name);
   }
 
   /**

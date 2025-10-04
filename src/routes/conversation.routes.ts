@@ -175,18 +175,29 @@ router.get('/sessions/active', async (_req: Request, res: Response): Promise<voi
  */
 router.post('/test-cerebras', async (req: Request, res: Response): Promise<void> => {
   try {
-    const { message, difficulty = 'beginner', topic, history = [], userId } = req.body;
+    const {
+      message,
+      difficulty = 'beginner',
+      topic,
+      history = [],
+      userId,
+      userPreferences,
+      userName
+    } = req.body;
 
     if (!message) {
       res.status(400).json({ error: 'Message is required' });
       return;
     }
 
-    // Get personalized system prompt if userId is provided
+    // Generate personalized system prompt from userPreferences (sent from frontend)
     let customSystemPrompt: string | undefined;
-    if (userId) {
-      customSystemPrompt = UserService.getPersonalizedSystemPrompt(userId);
-      console.log(`✨ Using personalized system prompt for user: ${userId}`);
+    if (userPreferences) {
+      customSystemPrompt = UserService.generateSystemPromptFromPreferences(
+        userPreferences,
+        userName
+      );
+      console.log(`✨ Using personalized system prompt${userName ? ` for ${userName}` : ''}`);
     }
 
     // Compact conversation history if it gets too long (>20 messages = 10 exchanges)
