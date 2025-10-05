@@ -41,7 +41,7 @@ export class CartesiaService {
 
     try {
       // Default to a good quality voice if not specified
-      const selectedVoiceId = voiceId || 'a0e99841-438c-4a64-b679-ae501e7d6091'; // Sonic English
+      const selectedVoiceId = voiceId || '9626c31c-bec5-4cca-baa8-f8ba9e84c8bc'; // Sonic English
 
       const response = await this.client.post(
         '/tts/bytes',
