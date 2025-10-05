@@ -172,9 +172,17 @@ export class UserService {
 
     const name = userName || 'the student';
 
-    let prompt = `You are a friendly and patient AI language teacher helping ${name} learn ${preferences.targetLanguage}. `;
-    prompt += `${name}'s native language is ${preferences.nativeLanguage}. `;
-    prompt += `They are at a ${preferences.proficiencyLevel.replace(/_/g, ' ')} level.\n\n`;
+    let prompt = `You are a friendly and patient AI language teacher helping ${name} learn ${preferences.targetLanguage || 'a new language'}. `;
+
+    if (preferences.nativeLanguage) {
+      prompt += `${name}'s native language is ${preferences.nativeLanguage}. `;
+    }
+
+    if (preferences.proficiencyLevel) {
+      prompt += `They are at a ${preferences.proficiencyLevel.replace(/_/g, ' ')} level.\n\n`;
+    } else {
+      prompt += `\n\n`;
+    }
 
     // STRICT GUARDRAILS - MUST FOLLOW
     prompt += `🚨 CRITICAL RULES - YOU MUST NEVER BREAK THESE:\n`;

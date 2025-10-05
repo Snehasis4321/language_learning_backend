@@ -9,7 +9,7 @@ import authRoutes from './routes/auth.routes';
 import { cerebrasService } from './services/cerebras.service';
 import { liveKitService } from './services/livekit.service';
 import { cartesiaService } from './services/cartesia.service';
-import { agentService } from './services/agent.service';
+// import { agentService } from './services/agent.service'; // Unused - agent runs separately
 import { testConnection } from './config/database';
 
 // Validate environment variables

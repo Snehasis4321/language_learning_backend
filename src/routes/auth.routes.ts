@@ -1,4 +1,4 @@
-import { Router, Request, Response } from 'express';
+import { Router, Response } from 'express';
 import { verifyFirebaseToken, AuthRequest } from '../middleware/auth.middleware';
 import { dbService } from '../services/db.service';
 

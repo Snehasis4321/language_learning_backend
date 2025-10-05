@@ -1,4 +1,4 @@
-import { query, getClient } from '../config/database';
+import { query } from '../config/database';
 
 export interface User {
   id: string;

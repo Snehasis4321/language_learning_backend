@@ -24,9 +24,24 @@ router.post('/start', optionalAuth, async (req: AuthRequest, res: Response): Pro
     // Create session
     const session = sessionStore.create(request);
 
-    // Get personalized system prompt if userId is provided
+    // Get personalized system prompt
     let customSystemPrompt: string | undefined;
-    if (userId) {
+
+    // Priority 1: Use userPreferences from request (from frontend localStorage)
+    if (req.body.userPreferences) {
+      console.log('📋 Received userPreferences:', JSON.stringify(req.body.userPreferences, null, 2));
+      console.log('👤 Received userName:', req.body.userName);
+
+      customSystemPrompt = UserService.generateSystemPromptFromPreferences(
+        req.body.userPreferences,
+        req.body.userName
+      );
+      console.log(`✨ Using personalized system prompt from localStorage${req.body.userName ? ` for ${req.body.userName}` : ''}`);
+      console.log('📝 Generated system prompt length:', customSystemPrompt?.length, 'characters');
+      console.log('📝 Generated system prompt preview:', customSystemPrompt?.substring(0, 200) + '...');
+    }
+    // Priority 2: Fallback to userId-based lookup (for authenticated users with saved profiles)
+    else if (userId) {
       customSystemPrompt = UserService.getPersonalizedSystemPrompt(userId);
       console.log(`✨ Using personalized system prompt for user: ${userId}`);
     }
@@ -47,8 +62,17 @@ router.post('/start', optionalAuth, async (req: AuthRequest, res: Response): Pro
       difficulty: session.difficulty,
       topic: session.topic,
       userId: userId,
+      userName: req.body.userName,
+      userPreferences: req.body.userPreferences,
       customSystemPrompt,
     });
+
+    console.log('🏠 Room metadata being sent to agent:');
+    console.log('   - difficulty:', session.difficulty);
+    console.log('   - topic:', session.topic);
+    console.log('   - userName:', req.body.userName);
+    console.log('   - customSystemPrompt length:', customSystemPrompt?.length || 0);
+    console.log('   - metadata size:', roomMetadata.length, 'bytes');
 
     // Create LiveKit room with metadata
     await liveKitService.createRoom(session.roomName, roomMetadata);
@@ -181,7 +205,6 @@ router.post('/test-cerebras', async (req: Request, res: Response): Promise<void>
       difficulty = 'beginner',
       topic,
       history = [],
-      userId,
       userPreferences,
       userName
     } = req.body;

@@ -19,13 +19,15 @@ export class LiveKitService {
    */
   async createRoom(roomName: string, metadata?: string): Promise<void> {
     try {
-      await this.roomService.createRoom({
+      const room = await this.roomService.createRoom({
         name: roomName,
         emptyTimeout: 300, // Room closes after 5 minutes of being empty
         maxParticipants: 5,
         metadata, // Pass metadata to room (agent will read this)
       });
       console.log(`Room created: ${roomName}${metadata ? ' with metadata' : ''}`);
+      console.log(`📦 Room metadata confirmed on creation: "${room.metadata}"`);
+      console.log(`📦 Room metadata length: ${room.metadata?.length || 0} bytes`);
     } catch (error) {
       console.error('Error creating room:', error);
       throw new Error(`Failed to create room: ${error}`);
