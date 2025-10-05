@@ -8,6 +8,7 @@ import { StartConversationRequest, StartConversationResponse } from '../types/co
 import { config } from '../config/env';
 import { optionalAuth, AuthRequest } from '../middleware/auth.middleware';
 import { dbService } from '../services/db.service';
+import { s3Service } from '../services/s3.service';
 
 const router: Router = Router();
 
@@ -251,7 +252,7 @@ router.post('/test-cerebras', async (req: Request, res: Response): Promise<void>
 
 /**
  * POST /api/conversation/tts
- * Generate text-to-speech audio
+ * Generate text-to-speech audio with S3 caching
  */
 router.post('/tts', async (req: Request, res: Response): Promise<void> => {
   try {
@@ -262,15 +263,49 @@ router.post('/tts', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    console.log(`🔊 Generating TTS for: "${text.substring(0, 50)}..."`);
+    // Generate chat_id from text and voiceId
+    const chatId = s3Service.generateChatId(text, voiceId);
+
+    // Check if TTS cache exists
+    const cachedTTS = await dbService.getTTSCache(chatId);
+
+    if (cachedTTS) {
+      console.log(`✅ TTS cache hit for chat_id: ${chatId}`);
+
+      // Generate presigned URL for the cached audio
+      const s3Key = s3Service.extractS3Key(cachedTTS.s3_url);
+      const presignedUrl = await s3Service.getPresignedUrl(s3Key, 3600); // 1 hour expiry
+
+      // Redirect to presigned URL
+      res.redirect(presignedUrl);
+      return;
+    }
+
+    // Cache miss - generate new TTS
+    console.log(`🔊 TTS cache miss. Generating TTS for: "${text.substring(0, 50)}..."`);
 
     // Generate audio using Cartesia
     const audioBuffer = await cartesiaService.generateSpeech(text, voiceId);
 
+    // Upload to S3
+    const s3Url = await s3Service.uploadAudio(chatId, audioBuffer);
+    const s3Key = s3Service.generateS3Key(chatId);
+
+    // Save to database
+    await dbService.saveTTSCache({
+      chat_id: chatId,
+      text,
+      voice_id: voiceId,
+      s3_url: s3Url,
+      s3_key: s3Key,
+    });
+
+    console.log(`✅ TTS cached successfully with chat_id: ${chatId}`);
+
     // Set appropriate headers for audio streaming
     res.setHeader('Content-Type', 'audio/mpeg');
     res.setHeader('Content-Length', audioBuffer.length);
-    res.setHeader('Cache-Control', 'public, max-age=3600'); // Cache for 1 hour
+    res.setHeader('Cache-Control', 'public, max-age=31536000'); // Cache for 1 year
 
     // Send audio data
     res.send(audioBuffer);

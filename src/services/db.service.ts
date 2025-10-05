@@ -232,4 +232,44 @@ export const dbService = {
     );
     return result.rows;
   },
+
+  // ===== TTS Cache =====
+  async getTTSCache(chatId: string): Promise<{
+    id: number;
+    chat_id: string;
+    text: string;
+    voice_id?: string;
+    s3_url: string;
+    s3_key: string;
+    created_at: Date;
+    last_accessed_at: Date;
+  } | null> {
+    const result = await query('SELECT * FROM tts_cache WHERE chat_id = $1', [chatId]);
+
+    // Update last_accessed_at if found
+    if (result.rows.length > 0) {
+      await query(
+        'UPDATE tts_cache SET last_accessed_at = CURRENT_TIMESTAMP WHERE chat_id = $1',
+        [chatId]
+      );
+    }
+
+    return result.rows[0] || null;
+  },
+
+  async saveTTSCache(ttsCache: {
+    chat_id: string;
+    text: string;
+    voice_id?: string;
+    s3_url: string;
+    s3_key: string;
+  }): Promise<void> {
+    await query(
+      `INSERT INTO tts_cache (chat_id, text, voice_id, s3_url, s3_key)
+       VALUES ($1, $2, $3, $4, $5)
+       ON CONFLICT (chat_id) DO UPDATE SET
+         last_accessed_at = CURRENT_TIMESTAMP`,
+      [ttsCache.chat_id, ttsCache.text, ttsCache.voice_id, ttsCache.s3_url, ttsCache.s3_key]
+    );
+  },
 };

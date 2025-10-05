@@ -10,6 +10,7 @@ import { cerebrasService } from './services/cerebras.service';
 import { liveKitService } from './services/livekit.service';
 import { cartesiaService } from './services/cartesia.service';
 import { agentService } from './services/agent.service';
+import { testConnection } from './config/database';
 
 // Validate environment variables
 validateEnv();
@@ -55,12 +56,21 @@ app.get('/status', async (_req: Request, res: Response): Promise<void> => {
     const liveKitConnected = await liveKitService.testConnection();
     const cartesiaConnected = await cartesiaService.testConnection();
 
+    let databaseConnected = false;
+    try {
+      await testConnection();
+      databaseConnected = true;
+    } catch (error) {
+      console.error('Database connection check failed:', error);
+    }
+
     res.json({
       status: 'operational',
       services: {
         cerebras: cerebrasConnected ? 'connected' : 'disconnected',
         livekit: liveKitConnected ? 'connected' : 'disconnected',
         cartesia: cartesiaConnected ? 'connected' : 'disconnected',
+        database: databaseConnected ? 'connected' : 'disconnected',
       },
       timestamp: new Date().toISOString(),
     });
@@ -106,6 +116,14 @@ app.listen(PORT, async () => {
   console.log(`Health check: http://localhost:${PORT}/health`);
   console.log(`Status check: http://localhost:${PORT}/status`);
   console.log('='.repeat(50));
+
+  // Test database connection on startup
+  console.log('\n🔌 Initializing connections...\n');
+  try {
+    await testConnection();
+  } catch (error) {
+    console.error('⚠️  Database connection failed - some features may not work correctly\n');
+  }
   console.log('\n📋 Available endpoints:');
   console.log('  Conversations:');
   console.log('    POST   /api/conversation/start');

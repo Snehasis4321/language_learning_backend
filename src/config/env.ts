@@ -21,6 +21,19 @@ export const config = {
     apiKey: process.env.CARTESIA_API_KEY || '',
     apiUrl: process.env.CARTESIA_API_URL || 'https://api.cartesia.ai',
   },
+
+  aws: {
+    region: process.env.AWS_REGION || 'us-east-1',
+    s3BucketName: process.env.AWS_S3_BUCKET_NAME || '',
+  },
+
+  database: {
+    user: process.env.DB_USER || '',
+    password: process.env.DB_PASSWORD || '',
+    host: process.env.DB_HOST || 'localhost',
+    port: parseInt(process.env.DB_PORT || '5432'),
+    name: process.env.DB_NAME || '',
+  },
 } as const;
 
 // Validate required environment variables

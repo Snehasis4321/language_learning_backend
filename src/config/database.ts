@@ -1,7 +1,11 @@
 import { Pool, QueryResult } from 'pg';
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  host: process.env.DB_HOST || 'localhost',
+  port: parseInt(process.env.DB_PORT || '5432'),
+  database: process.env.DB_NAME,
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
   max: 20,
   idleTimeoutMillis: 30000,
@@ -47,6 +51,26 @@ export const getClient = async () => {
   };
 
   return { query, release: client.release };
+};
+
+// Test database connection
+export const testConnection = async (): Promise<void> => {
+  try {
+    console.log('🔍 Testing database connection...');
+    const result = await pool.query('SELECT NOW()');
+    console.log('✅ Database connected successfully!');
+    console.log(`📊 Database: ${process.env.DB_NAME} | User: ${process.env.DB_USER} | Host: ${process.env.DB_HOST}:${process.env.DB_PORT}`);
+    console.log(`⏰ Server time: ${result.rows[0].now}`);
+  } catch (error) {
+    console.error('❌ Database connection failed:', error);
+    console.error('📋 Connection details:', {
+      user: process.env.DB_USER,
+      host: process.env.DB_HOST,
+      port: process.env.DB_PORT,
+      database: process.env.DB_NAME,
+    });
+    throw error;
+  }
 };
 
 export default pool;

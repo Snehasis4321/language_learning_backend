@@ -69,12 +69,25 @@ CREATE TABLE IF NOT EXISTS saved_vocabulary (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- TTS Cache table (stores cached TTS audio in S3)
+CREATE TABLE IF NOT EXISTS tts_cache (
+  id SERIAL PRIMARY KEY,
+  chat_id TEXT UNIQUE NOT NULL, -- Unique identifier for each chat/message
+  text TEXT NOT NULL, -- The text that was converted to speech
+  voice_id TEXT, -- The voice used for TTS
+  s3_url TEXT NOT NULL, -- S3 URL where the audio is stored
+  s3_key TEXT NOT NULL, -- S3 object key
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  last_accessed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Indexes for better query performance
 CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON sessions(user_id);
 CREATE INDEX IF NOT EXISTS idx_sessions_status ON sessions(status);
 CREATE INDEX IF NOT EXISTS idx_messages_session_id ON messages(session_id);
 CREATE INDEX IF NOT EXISTS idx_user_progress_user_id ON user_progress(user_id);
 CREATE INDEX IF NOT EXISTS idx_saved_vocabulary_user_id ON saved_vocabulary(user_id);
+CREATE INDEX IF NOT EXISTS idx_tts_cache_chat_id ON tts_cache(chat_id);
 
 -- Function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
