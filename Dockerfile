@@ -14,7 +14,7 @@ COPY . .
 RUN pnpm build
 
 # Expose port
-EXPOSE 3000
+EXPOSE 3550
 
 # Run backend server
 CMD ["node", "dist/index.js"]

@@ -27,6 +27,7 @@ Courses
 ```
 
 **Example Structure:**
+
 ```
 Course: "Spanish for Beginners"
   ├─ Unit 1: "Basic Greetings"
@@ -41,6 +42,7 @@ Course: "Spanish for Beginners"
 ### 1.3 Lesson Content Types
 
 #### A. Vocabulary Lessons
+
 - Word lists with translations
 - Audio pronunciation (Cartesia TTS)
 - Example sentences with context
@@ -48,24 +50,28 @@ Course: "Spanish for Beginners"
 - Spaced repetition scheduling
 
 #### B. Grammar Lessons
+
 - Rule explanations with examples
 - Interactive exercises (fill-in-the-blank, sentence transformation)
 - Common mistake highlights
 - Practice sets
 
 #### C. Reading/Listening Comprehension
+
 - Text or audio content
 - Comprehension questions
 - Vocabulary highlights
 - Cultural context notes
 
 #### D. Speaking Practice
+
 - Sentence prompts for user to repeat
 - Voice recording upload
 - AI-powered pronunciation evaluation (Cerebras + Cartesia)
 - Feedback on errors and improvement tips
 
 #### E. Writing Exercises
+
 - Sentence building tasks
 - Translation exercises
 - Free-form writing with AI review
@@ -99,6 +105,7 @@ Response: { currentLevel, xp, streak, completedLessons, weakAreas }
 ### 1.5 Progress Tracking
 
 **Metrics to Track:**
+
 - Lessons completed
 - Exercises attempted/completed
 - Accuracy rates by skill type
@@ -108,6 +115,7 @@ Response: { currentLevel, xp, streak, completedLessons, weakAreas }
 - Weak areas identified (for adaptive learning)
 
 **Database Tables:**
+
 ```sql
 user_progress (user_id, lesson_id, status, score, completed_at)
 user_stats (user_id, total_xp, level, streak_days, last_active)
@@ -177,6 +185,7 @@ exercise_attempts (user_id, exercise_id, answer, correct, created_at)
 ### 2.3 AI Agent Implementation
 
 #### Tech Stack
+
 - **LiveKit Agents SDK** (Python or Node.js)
 - **Cartesia API** for STT and TTS
 - **Cerebras API** for LLM responses
@@ -220,6 +229,7 @@ class LanguageTeacherAgent:
 #### Agent Capabilities
 
 **Practice Mode:**
+
 - Provides prompts: "Try saying: 'Hello, how are you?'"
 - Listens to user response
 - Evaluates pronunciation and grammar
@@ -227,6 +237,7 @@ class LanguageTeacherAgent:
 - Encourages retry or moves to next prompt
 
 **Free Conversation:**
+
 - Engages in natural dialogue
 - Adjusts complexity to user level
 - Asks follow-up questions
@@ -234,6 +245,7 @@ class LanguageTeacherAgent:
 - Introduces new vocabulary contextually
 
 **Role-Play Scenarios:**
+
 - Sets context (restaurant, job interview, etc.)
 - Plays specific role (waiter, interviewer)
 - Guides user through scenario
@@ -263,6 +275,7 @@ Response: { topics: [{ id, name, difficulty, description }] }
 ### 2.5 Conversation Data Storage
 
 **Tables:**
+
 ```sql
 conversation_sessions (
   id, user_id, type, topic, started_at, ended_at, duration
@@ -286,12 +299,14 @@ conversation_feedback (
 ### Phase 1: Foundation (Week 1-2)
 
 **Goals:**
+
 - Set up development environment
 - Create database schema
 - Implement authentication
 - Basic API structure
 
 **Tasks:**
+
 1. Initialize Express.js project with TypeScript
 2. Set up PostgreSQL database
 3. Create database migrations for core tables
@@ -301,6 +316,7 @@ conversation_feedback (
 7. Environment configuration (.env setup)
 
 **Deliverables:**
+
 - Running Express server
 - Database with schema
 - Auth endpoints working
@@ -309,11 +325,13 @@ conversation_feedback (
 ### Phase 2: Content Delivery System (Week 3-4)
 
 **Goals:**
+
 - Implement lesson/course management
 - Create exercise system
 - Build progress tracking
 
 **Tasks:**
+
 1. Create lesson CRUD APIs
 2. Implement exercise types (multiple choice, fill-in-blank)
 3. Build progress tracking endpoints
@@ -323,6 +341,7 @@ conversation_feedback (
 7. Build recommendation algorithm for next lesson
 
 **Deliverables:**
+
 - Complete lesson management system
 - Working exercise submission and grading
 - Progress tracking dashboard data
@@ -331,11 +350,13 @@ conversation_feedback (
 ### Phase 3: Voice & AI Features (Week 5-6)
 
 **Goals:**
+
 - Integrate Cartesia for speech
 - Implement AI evaluation
 - Voice recording handling
 
 **Tasks:**
+
 1. Integrate Cartesia STT API
 2. Integrate Cartesia TTS API
 3. Create audio file upload handling (S3/Cloud Storage)
@@ -345,6 +366,7 @@ conversation_feedback (
 7. Add text-to-speech for lesson content
 
 **Deliverables:**
+
 - Working voice recording upload
 - AI-powered pronunciation feedback
 - TTS for reading text aloud
@@ -353,11 +375,13 @@ conversation_feedback (
 ### Phase 4: Real-Time Conversations (Week 7-8)
 
 **Goals:**
+
 - Implement LiveKit integration
 - Build AI agent system
 - Create conversation management
 
 **Tasks:**
+
 1. Set up LiveKit server/cloud account
 2. Implement room creation and token generation
 3. Build AI agent using LiveKit Agents SDK
@@ -368,6 +392,7 @@ conversation_feedback (
 8. Build different conversation modes (practice, free, roleplay)
 
 **Deliverables:**
+
 - Fully functional real-time conversation system
 - AI agent with multiple modes
 - Conversation history and analytics
@@ -376,11 +401,13 @@ conversation_feedback (
 ### Phase 5: Testing & Polish (Week 9-10)
 
 **Goals:**
+
 - Comprehensive testing
 - Performance optimization
 - Documentation
 
 **Tasks:**
+
 1. Unit tests for all services
 2. Integration tests for API endpoints
 3. Load testing for conversation system
@@ -391,6 +418,7 @@ conversation_feedback (
 8. CI/CD pipeline setup
 
 **Deliverables:**
+
 - Test coverage > 80%
 - Performance benchmarks met
 - Complete API documentation
@@ -507,7 +535,7 @@ conversation_messages (
 
 ```env
 # Server
-PORT=3000
+PORT=3550
 NODE_ENV=development
 
 # Database
@@ -544,12 +572,14 @@ LOG_LEVEL=info
 ### 4.3 Scalability Considerations
 
 **For Lessons:**
+
 - Cache lesson content in Redis
 - Use CDN for static assets (images, audio files)
 - Database read replicas for heavy read operations
 - Index frequently queried fields
 
 **For Conversations:**
+
 - LiveKit can scale horizontally
 - Use queue system (Bull/RabbitMQ) for agent spawning
 - Monitor concurrent conversation limits
@@ -585,24 +615,28 @@ LOG_LEVEL=info
 ## 5. Testing Strategy
 
 ### 5.1 Unit Tests
+
 - Service layer logic
 - Utility functions
 - Data validation
 - Score calculation algorithms
 
 ### 5.2 Integration Tests
+
 - API endpoint responses
 - Database operations
 - External API integrations (mocked)
 - Authentication flows
 
 ### 5.3 End-to-End Tests
+
 - Complete lesson flow
 - Conversation session lifecycle
 - User progress tracking
 - Multi-step workflows
 
 ### 5.4 Performance Tests
+
 - API response times (< 200ms for most endpoints)
 - Concurrent conversation handling
 - Database query optimization
@@ -613,12 +647,14 @@ LOG_LEVEL=info
 ## 6. Monitoring & Analytics
 
 ### 6.1 Application Metrics
+
 - API response times
 - Error rates by endpoint
 - Active conversation sessions
 - Database connection pool status
 
 ### 6.2 Business Metrics
+
 - Daily/Monthly active users
 - Lesson completion rates
 - Average session duration
@@ -626,6 +662,7 @@ LOG_LEVEL=info
 - Most popular lessons/topics
 
 ### 6.3 AI Performance Metrics
+
 - Speech recognition accuracy
 - AI response generation time
 - TTS latency

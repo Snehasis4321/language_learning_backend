@@ -28,7 +28,7 @@ Edit `.env` and add your API keys:
 
 ```env
 # Server Configuration
-PORT=3000
+PORT=3550
 NODE_ENV=development
 
 # Cerebras API
@@ -244,7 +244,7 @@ pnpm format
 
 ### Port already in use
 
-If port 3000 is already taken:
+If port 3550 is already taken:
 
 ```bash
 # Change PORT in .env file

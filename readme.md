@@ -59,7 +59,7 @@ Create a `.env` file in the root directory:
 
 ```env
 # Server Configuration
-PORT=3000
+PORT=3550
 NODE_ENV=development
 
 # Database

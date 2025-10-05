@@ -3,12 +3,14 @@
 ## Development (Local)
 
 ### Option 1: Run Together
+
 ```bash
 # Agent starts automatically with backend
 pnpm dev
 ```
 
 ### Option 2: Run Separately (Recommended)
+
 ```bash
 # Terminal 1: Backend API
 pnpm dev
@@ -40,12 +42,14 @@ docker-compose down
 ### Option 2: Separate VMs/Containers
 
 **Backend:**
+
 ```bash
 pnpm build
 NODE_ENV=production START_AGENT_WITH_BACKEND=false pnpm start
 ```
 
 **Agent (separate machine):**
+
 ```bash
 pnpm build
 pnpm start:agent
@@ -56,6 +60,7 @@ pnpm start:agent
 Create `k8s/` manifests:
 
 **backend-deployment.yaml:**
+
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -72,29 +77,30 @@ spec:
         app: backend
     spec:
       containers:
-      - name: backend
-        image: your-registry/language-learning-backend:latest
-        ports:
-        - containerPort: 3000
-        env:
-        - name: START_AGENT_WITH_BACKEND
-          value: "false"
-        - name: LIVEKIT_URL
-          valueFrom:
-            secretKeyRef:
-              name: app-secrets
-              key: livekit-url
-        # ... other env vars
+        - name: backend
+          image: your-registry/language-learning-backend:latest
+          ports:
+            - containerPort: 3550
+          env:
+            - name: START_AGENT_WITH_BACKEND
+              value: 'false'
+            - name: LIVEKIT_URL
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: livekit-url
+          # ... other env vars
 ```
 
 **agent-deployment.yaml:**
+
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: language-learning-agent
 spec:
-  replicas: 3  # Scale as needed
+  replicas: 3 # Scale as needed
   selector:
     matchLabels:
       app: agent
@@ -104,15 +110,15 @@ spec:
         app: agent
     spec:
       containers:
-      - name: agent
-        image: your-registry/language-learning-agent:latest
-        env:
-        - name: LIVEKIT_URL
-          valueFrom:
-            secretKeyRef:
-              name: app-secrets
-              key: livekit-url
-        # ... other env vars
+        - name: agent
+          image: your-registry/language-learning-agent:latest
+          env:
+            - name: LIVEKIT_URL
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: livekit-url
+          # ... other env vars
 ```
 
 ---
@@ -169,6 +175,7 @@ fly scale count 3 --app language-learning-agent
 ### Deploy to AWS (ECS)
 
 1. Build images:
+
 ```bash
 docker build -t backend:latest -f Dockerfile .
 docker build -t agent:latest -f Dockerfile.agent .
@@ -183,16 +190,19 @@ docker build -t agent:latest -f Dockerfile.agent .
 ## Scaling Guidelines
 
 **Backend API:**
+
 - Scale based on HTTP requests
 - Typical: 2-5 instances
 - CPU/Memory: 512MB-1GB per instance
 
 **Agent Workers:**
+
 - Scale based on concurrent voice sessions
 - 1 agent ≈ 5-10 concurrent sessions
 - CPU/Memory: 1-2GB per instance (for STT/TTS processing)
 
 **Example:**
+
 - 100 concurrent users → 10-20 agent workers
 - Load balancing handled automatically by LiveKit
 
@@ -201,6 +211,7 @@ docker build -t agent:latest -f Dockerfile.agent .
 ## Environment Variables
 
 Required for both services:
+
 ```bash
 LIVEKIT_URL=wss://your-project.livekit.cloud
 LIVEKIT_API_KEY=your-key
@@ -210,8 +221,9 @@ OPENAI_API_KEY=your-key  # For STT/TTS
 ```
 
 Backend only:
+
 ```bash
-PORT=3000
+PORT=3550
 START_AGENT_WITH_BACKEND=false
 CARTESIA_API_KEY=your-key  # Optional
 ```
@@ -221,12 +233,14 @@ CARTESIA_API_KEY=your-key  # Optional
 ## Monitoring
 
 Check agent health:
+
 ```bash
 # See LiveKit dashboard for active agents
 # Each agent registers itself automatically
 ```
 
 Logs:
+
 ```bash
 # Docker
 docker-compose logs -f agent
@@ -240,16 +254,19 @@ kubectl logs -f deployment/language-learning-agent
 ## Troubleshooting
 
 **Agent not connecting:**
+
 - Check `LIVEKIT_URL`, `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET`
 - Verify LiveKit server is accessible
 - Check agent logs for connection errors
 
 **No response in voice chat:**
+
 - Verify `CEREBRAS_API_KEY` is set
 - Check `OPENAI_API_KEY` for STT/TTS
 - Review agent logs for LLM errors
 
 **Performance issues:**
+
 - Scale agent workers (more replicas)
 - Monitor CPU/memory usage
 - Consider dedicated STT/TTS service

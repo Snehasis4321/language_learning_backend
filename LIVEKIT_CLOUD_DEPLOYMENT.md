@@ -3,6 +3,7 @@
 ## Overview
 
 LiveKit Cloud **FREE tier** allows you to:
+
 - ✅ Use their media servers (WebRTC)
 - ✅ Connect your own agent workers
 - ❌ NOT host agents on their infrastructure (paid only)
@@ -28,6 +29,7 @@ LiveKit Cloud **FREE tier** allows you to:
 ### Option A: Railway.app (Recommended - $5/month, free trial)
 
 **Setup:**
+
 ```bash
 # Install Railway CLI
 npm i -g @railway/cli
@@ -51,6 +53,7 @@ railway up
 ```
 
 **Or use Railway UI:**
+
 1. Go to https://railway.app
 2. New Project → Deploy from GitHub
 3. Connect your repo
@@ -62,6 +65,7 @@ railway up
 ### Option B: Render.com (Free tier available)
 
 **Background Worker (Agent):**
+
 1. New → Background Worker
 2. Connect GitHub repo
 3. Build Command: `pnpm install && pnpm build`
@@ -76,6 +80,7 @@ railway up
    ```
 
 **Web Service (Backend API):**
+
 1. New → Web Service
 2. Build Command: `pnpm install && pnpm build`
 3. Start Command: `pnpm start`
@@ -88,6 +93,7 @@ railway up
 ### Option C: Fly.io (Generous free tier)
 
 **Deploy Backend + Agent together:**
+
 ```bash
 # Install flyctl
 curl -L https://fly.io/install.sh | sh
@@ -114,6 +120,7 @@ fly logs
 ```
 
 **Or separate agent:**
+
 ```bash
 # Create second app for agent
 fly launch --dockerfile Dockerfile.agent --app my-agent
@@ -134,7 +141,7 @@ fly deploy --app my-agent
    - Name: `backend`
    - Build: `pnpm install && pnpm build`
    - Run: `node dist/index.js`
-   - HTTP Port: 3000
+   - HTTP Port: 3550
 4. Add environment variables to both
 5. Deploy
 
@@ -143,11 +150,13 @@ fly deploy --app my-agent
 ### Option E: VPS (Most Control)
 
 **Cheapest options:**
+
 - Hetzner: €4.15/month
 - Linode: $5/month
 - DigitalOcean: $4/month
 
 **Setup:**
+
 ```bash
 # SSH into your VPS
 ssh user@your-vps-ip
@@ -232,7 +241,7 @@ pm2 logs
 │                         │
 │  ┌──────────────────┐   │
 │  │  Backend API     │   │ ← Creates rooms, generates tokens
-│  │  (Port 3000)     │   │
+│  │  (Port 3550)     │   │
 │  └──────────────────┘   │
 │                         │
 │  ┌──────────────────┐   │
@@ -265,6 +274,7 @@ pm2 logs
 ## Cost Breakdown (Monthly)
 
 **Cheapest Setup:**
+
 - LiveKit Cloud: **$0** (free tier: 50GB traffic/month)
 - Backend + Agent: **$0-5**
   - Render: Free (with sleep)
@@ -275,6 +285,7 @@ pm2 logs
 - OpenAI TTS: **$15** per 1M characters
 
 **Example for 100 conversations/month (5 min each):**
+
 - LiveKit: $0
 - Hosting: $0-5
 - STT: 100 × 5 × $0.006 = $3
@@ -287,10 +298,12 @@ pm2 logs
 ## Scaling (When You Grow)
 
 **Free tier limits:**
+
 - LiveKit Cloud Free: 50GB egress/month
 - ~500-1000 short conversations/month
 
 **When to upgrade:**
+
 1. LiveKit Cloud → Paid ($29/month for 500GB)
 2. Add more agent workers (horizontal scaling)
 3. Consider switching to Deepgram (cheaper STT)
@@ -301,6 +314,7 @@ pm2 logs
 ## Troubleshooting
 
 **Agent not showing in LiveKit dashboard:**
+
 ```bash
 # Check logs for connection errors
 railway logs | grep -i livekit
@@ -314,12 +328,14 @@ curl -H "Authorization: Bearer $LIVEKIT_API_KEY" $LIVEKIT_URL
 ```
 
 **Voice chat not working:**
+
 1. Check browser console for errors
 2. Verify frontend can reach backend API
 3. Check agent logs for LLM/STT/TTS errors
 4. Ensure OPENAI_API_KEY is set
 
 **High latency:**
+
 - Choose hosting region close to LiveKit Cloud region
 - Check CPU/memory usage on agent worker
 - Consider adding more agent instances
