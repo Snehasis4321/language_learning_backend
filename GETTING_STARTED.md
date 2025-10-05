@@ -44,12 +44,14 @@ LIVEKIT_URL=wss://your-project.livekit.cloud
 ### How to Get API Keys
 
 **Cerebras:**
+
 1. Go to [cerebras.ai](https://cerebras.ai/)
 2. Sign up for an account
 3. Navigate to API settings
 4. Generate a new API key
 
 **LiveKit:**
+
 1. Go to [livekit.io](https://livekit.io/) and sign up
 2. Create a new project
 3. Go to Settings → Keys
@@ -68,9 +70,9 @@ You should see:
 🚀 Language Learning Backend Server
 ==================================================
 Environment: development
-Server running on: http://localhost:3000
-Health check: http://localhost:3000/health
-Status check: http://localhost:3000/status
+Server running on: http://localhost:3550
+Health check: http://localhost:3550/health
+Status check: http://localhost:3550/status
 ==================================================
 
 📋 Available endpoints:
@@ -81,7 +83,7 @@ Status check: http://localhost:3000/status
   POST   /api/conversation/test-cerebras
 
 🧪 Test Pages:
-  Voice Test: http://localhost:3000/test-voice.html
+  Voice Test: http://localhost:3550/test-voice.html
 
 ✨ Server is ready to accept requests!
 ```
@@ -93,7 +95,7 @@ Status check: http://localhost:3000/status
 Open your browser and navigate to:
 
 ```
-http://localhost:3000/status
+http://localhost:3550/status
 ```
 
 You should see:
@@ -116,7 +118,7 @@ If any service shows "disconnected", check your API keys in `.env`.
 Use curl or Postman to test the Cerebras integration:
 
 ```bash
-curl -X POST http://localhost:3000/api/conversation/test-cerebras \
+curl -X POST http://localhost:3550/api/conversation/test-cerebras \
   -H "Content-Type: application/json" \
   -d '{
     "message": "Hello! Can you help me learn Spanish?",
@@ -138,13 +140,14 @@ Expected response:
 ### 4.3 Test Voice Conversation (Browser)
 
 1. Open your browser
-2. Navigate to: `http://localhost:3000/test-voice.html`
+2. Navigate to: `http://localhost:3550/test-voice.html`
 3. Select difficulty level and optional topic
 4. Click "Start Conversation"
 5. Allow microphone access when prompted
 6. Start speaking!
 
 **Note:** The current version creates rooms and handles connections, but the AI agent that responds to voice is not yet fully integrated. You'll be able to connect and transmit audio, but you won't receive AI responses yet. This requires:
+
 - Speech-to-Text integration (Cartesia or OpenAI Whisper)
 - Text-to-Speech integration (Cartesia or OpenAI TTS)
 - Agent spawning logic

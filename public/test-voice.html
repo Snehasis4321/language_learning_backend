@@ -1,362 +1,371 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Language Learning - Voice Test</title>
     <script src="https://unpkg.com/livekit-client/dist/livekit-client.umd.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+      }
 
-        .container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            padding: 40px;
-            max-width: 600px;
-            width: 100%;
-        }
+      .container {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        padding: 40px;
+        max-width: 600px;
+        width: 100%;
+      }
 
-        h1 {
-            color: #667eea;
-            margin-bottom: 10px;
-            text-align: center;
-        }
+      h1 {
+        color: #667eea;
+        margin-bottom: 10px;
+        text-align: center;
+      }
 
-        .subtitle {
-            text-align: center;
-            color: #666;
-            margin-bottom: 30px;
-        }
+      .subtitle {
+        text-align: center;
+        color: #666;
+        margin-bottom: 30px;
+      }
 
-        .settings {
-            background: #f7f7f7;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
+      .settings {
+        background: #f7f7f7;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+      }
 
-        .form-group {
-            margin-bottom: 15px;
-        }
+      .form-group {
+        margin-bottom: 15px;
+      }
 
-        label {
-            display: block;
-            margin-bottom: 5px;
-            color: #333;
-            font-weight: 500;
-        }
+      label {
+        display: block;
+        margin-bottom: 5px;
+        color: #333;
+        font-weight: 500;
+      }
 
-        select, input {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #e0e0e0;
-            border-radius: 5px;
-            font-size: 14px;
-        }
+      select,
+      input {
+        width: 100%;
+        padding: 10px;
+        border: 2px solid #e0e0e0;
+        border-radius: 5px;
+        font-size: 14px;
+      }
 
-        select:focus, input:focus {
-            outline: none;
-            border-color: #667eea;
-        }
+      select:focus,
+      input:focus {
+        outline: none;
+        border-color: #667eea;
+      }
 
-        .button {
-            width: 100%;
-            padding: 15px;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-bottom: 10px;
-        }
+      .button {
+        width: 100%;
+        padding: 15px;
+        border: none;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        margin-bottom: 10px;
+      }
 
-        .button-primary {
-            background: #667eea;
-            color: white;
-        }
+      .button-primary {
+        background: #667eea;
+        color: white;
+      }
 
-        .button-primary:hover:not(:disabled) {
-            background: #5568d3;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
+      .button-primary:hover:not(:disabled) {
+        background: #5568d3;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+      }
 
-        .button-danger {
-            background: #e74c3c;
-            color: white;
-        }
+      .button-danger {
+        background: #e74c3c;
+        color: white;
+      }
 
-        .button-danger:hover:not(:disabled) {
-            background: #c0392b;
-        }
+      .button-danger:hover:not(:disabled) {
+        background: #c0392b;
+      }
 
-        .button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
+      .button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
 
-        .status {
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 20px;
-            text-align: center;
-            font-weight: 500;
-        }
+      .status {
+        padding: 15px;
+        border-radius: 10px;
+        margin-top: 20px;
+        text-align: center;
+        font-weight: 500;
+      }
 
-        .status.disconnected {
-            background: #ffe5e5;
-            color: #c0392b;
-        }
+      .status.disconnected {
+        background: #ffe5e5;
+        color: #c0392b;
+      }
 
-        .status.connecting {
-            background: #fff4e5;
-            color: #e67e22;
-        }
+      .status.connecting {
+        background: #fff4e5;
+        color: #e67e22;
+      }
 
-        .status.connected {
-            background: #e8f5e9;
-            color: #27ae60;
-        }
+      .status.connected {
+        background: #e8f5e9;
+        color: #27ae60;
+      }
 
-        .audio-indicator {
-            display: flex;
-            justify-content: center;
-            gap: 5px;
-            margin-top: 15px;
-        }
+      .audio-indicator {
+        display: flex;
+        justify-content: center;
+        gap: 5px;
+        margin-top: 15px;
+      }
 
-        .bar {
-            width: 4px;
-            height: 20px;
-            background: #667eea;
-            border-radius: 2px;
-            animation: pulse 0.8s ease-in-out infinite;
-        }
+      .bar {
+        width: 4px;
+        height: 20px;
+        background: #667eea;
+        border-radius: 2px;
+        animation: pulse 0.8s ease-in-out infinite;
+      }
 
-        .bar:nth-child(2) { animation-delay: 0.1s; }
-        .bar:nth-child(3) { animation-delay: 0.2s; }
-        .bar:nth-child(4) { animation-delay: 0.3s; }
-        .bar:nth-child(5) { animation-delay: 0.4s; }
+      .bar:nth-child(2) {
+        animation-delay: 0.1s;
+      }
+      .bar:nth-child(3) {
+        animation-delay: 0.2s;
+      }
+      .bar:nth-child(4) {
+        animation-delay: 0.3s;
+      }
+      .bar:nth-child(5) {
+        animation-delay: 0.4s;
+      }
 
-        @keyframes pulse {
-            0%, 100% { transform: scaleY(1); }
-            50% { transform: scaleY(2); }
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scaleY(1);
         }
+        50% {
+          transform: scaleY(2);
+        }
+      }
 
-        #audioContainer {
-            display: none;
-        }
+      #audioContainer {
+        display: none;
+      }
 
-        .info {
-            background: #e3f2fd;
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 20px;
-            font-size: 14px;
-            color: #1976d2;
-        }
+      .info {
+        background: #e3f2fd;
+        padding: 15px;
+        border-radius: 10px;
+        margin-top: 20px;
+        font-size: 14px;
+        color: #1976d2;
+      }
 
-        .info strong {
-            display: block;
-            margin-bottom: 5px;
-        }
+      .info strong {
+        display: block;
+        margin-bottom: 5px;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <h1>🗣️ Voice Conversation Test</h1>
-        <p class="subtitle">Test your language learning conversation with AI teacher</p>
+      <h1>🗣️ Voice Conversation Test</h1>
+      <p class="subtitle">Test your language learning conversation with AI teacher</p>
 
-        <div class="settings">
-            <div class="form-group">
-                <label for="difficulty">Difficulty Level</label>
-                <select id="difficulty">
-                    <option value="beginner">Beginner</option>
-                    <option value="intermediate">Intermediate</option>
-                    <option value="advanced">Advanced</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="topic">Topic (Optional)</label>
-                <input type="text" id="topic" placeholder="e.g., greetings, food, travel">
-            </div>
-
-            <div class="form-group">
-                <label for="apiUrl">Backend URL</label>
-                <input type="text" id="apiUrl" value="http://localhost:3000">
-            </div>
+      <div class="settings">
+        <div class="form-group">
+          <label for="difficulty">Difficulty Level</label>
+          <select id="difficulty">
+            <option value="beginner">Beginner</option>
+            <option value="intermediate">Intermediate</option>
+            <option value="advanced">Advanced</option>
+          </select>
         </div>
 
-        <button id="connectBtn" class="button button-primary">
-            Start Conversation
-        </button>
-
-        <button id="disconnectBtn" class="button button-danger" style="display: none;">
-            End Conversation
-        </button>
-
-        <div id="status" class="status disconnected">
-            Disconnected
+        <div class="form-group">
+          <label for="topic">Topic (Optional)</label>
+          <input type="text" id="topic" placeholder="e.g., greetings, food, travel" />
         </div>
 
-        <div id="audioIndicator" class="audio-indicator" style="display: none;">
-            <div class="bar"></div>
-            <div class="bar"></div>
-            <div class="bar"></div>
-            <div class="bar"></div>
-            <div class="bar"></div>
+        <div class="form-group">
+          <label for="apiUrl">Backend URL</label>
+          <input type="text" id="apiUrl" value="http://localhost:3550" />
         </div>
+      </div>
 
-        <div class="info">
-            <strong>How to use:</strong>
-            1. Make sure your backend server is running<br>
-            2. Set your difficulty and topic<br>
-            3. Click "Start Conversation"<br>
-            4. Allow microphone access when prompted<br>
-            5. Start speaking! The AI teacher will respond
-        </div>
+      <button id="connectBtn" class="button button-primary">Start Conversation</button>
 
-        <div id="audioContainer"></div>
+      <button id="disconnectBtn" class="button button-danger" style="display: none">
+        End Conversation
+      </button>
+
+      <div id="status" class="status disconnected">Disconnected</div>
+
+      <div id="audioIndicator" class="audio-indicator" style="display: none">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+      </div>
+
+      <div class="info">
+        <strong>How to use:</strong>
+        1. Make sure your backend server is running<br />
+        2. Set your difficulty and topic<br />
+        3. Click "Start Conversation"<br />
+        4. Allow microphone access when prompted<br />
+        5. Start speaking! The AI teacher will respond
+      </div>
+
+      <div id="audioContainer"></div>
     </div>
 
     <script>
-        const LivekitClient = window.LivekitClient;
-        let room = null;
-        let sessionId = null;
+      const LivekitClient = window.LivekitClient;
+      let room = null;
+      let sessionId = null;
 
-        const connectBtn = document.getElementById('connectBtn');
-        const disconnectBtn = document.getElementById('disconnectBtn');
-        const statusEl = document.getElementById('status');
-        const audioIndicator = document.getElementById('audioIndicator');
-        const audioContainer = document.getElementById('audioContainer');
+      const connectBtn = document.getElementById('connectBtn');
+      const disconnectBtn = document.getElementById('disconnectBtn');
+      const statusEl = document.getElementById('status');
+      const audioIndicator = document.getElementById('audioIndicator');
+      const audioContainer = document.getElementById('audioContainer');
 
-        function updateStatus(status, text) {
-            statusEl.className = `status ${status}`;
-            statusEl.textContent = text;
+      function updateStatus(status, text) {
+        statusEl.className = `status ${status}`;
+        statusEl.textContent = text;
+      }
+
+      async function startConversation() {
+        try {
+          connectBtn.disabled = true;
+          updateStatus('connecting', 'Connecting...');
+
+          const apiUrl = document.getElementById('apiUrl').value;
+          const difficulty = document.getElementById('difficulty').value;
+          const topic = document.getElementById('topic').value;
+
+          // Request conversation session
+          const response = await fetch(`${apiUrl}/api/conversation/start`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              difficulty,
+              topic: topic || undefined,
+              userId: 'test-user',
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const data = await response.json();
+          sessionId = data.sessionId;
+
+          // Connect to LiveKit room
+          room = new LivekitClient.Room({
+            adaptiveStream: true,
+            dynacast: true,
+          });
+
+          // Set up event listeners
+          room.on(LivekitClient.RoomEvent.TrackSubscribed, handleTrackSubscribed);
+          room.on(LivekitClient.RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed);
+          room.on(LivekitClient.RoomEvent.Disconnected, handleDisconnect);
+          room.on(LivekitClient.RoomEvent.ParticipantConnected, participant => {
+            console.log('Participant connected:', participant.identity);
+          });
+
+          // Connect to room
+          await room.connect(data.url, data.token);
+
+          // Enable microphone
+          await room.localParticipant.setMicrophoneEnabled(true);
+
+          updateStatus('connected', 'Connected! Start speaking...');
+          connectBtn.style.display = 'none';
+          disconnectBtn.style.display = 'block';
+          audioIndicator.style.display = 'flex';
+        } catch (error) {
+          console.error('Error starting conversation:', error);
+          updateStatus('disconnected', `Error: ${error.message}`);
+          connectBtn.disabled = false;
         }
+      }
 
-        async function startConversation() {
-            try {
-                connectBtn.disabled = true;
-                updateStatus('connecting', 'Connecting...');
+      async function endConversation() {
+        try {
+          if (room) {
+            await room.disconnect();
+          }
 
-                const apiUrl = document.getElementById('apiUrl').value;
-                const difficulty = document.getElementById('difficulty').value;
-                const topic = document.getElementById('topic').value;
+          if (sessionId) {
+            const apiUrl = document.getElementById('apiUrl').value;
+            await fetch(`${apiUrl}/api/conversation/${sessionId}/end`, {
+              method: 'POST',
+            });
+          }
 
-                // Request conversation session
-                const response = await fetch(`${apiUrl}/api/conversation/start`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        difficulty,
-                        topic: topic || undefined,
-                        userId: 'test-user'
-                    })
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const data = await response.json();
-                sessionId = data.sessionId;
-
-                // Connect to LiveKit room
-                room = new LivekitClient.Room({
-                    adaptiveStream: true,
-                    dynacast: true,
-                });
-
-                // Set up event listeners
-                room.on(LivekitClient.RoomEvent.TrackSubscribed, handleTrackSubscribed);
-                room.on(LivekitClient.RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed);
-                room.on(LivekitClient.RoomEvent.Disconnected, handleDisconnect);
-                room.on(LivekitClient.RoomEvent.ParticipantConnected, (participant) => {
-                    console.log('Participant connected:', participant.identity);
-                });
-
-                // Connect to room
-                await room.connect(data.url, data.token);
-
-                // Enable microphone
-                await room.localParticipant.setMicrophoneEnabled(true);
-
-                updateStatus('connected', 'Connected! Start speaking...');
-                connectBtn.style.display = 'none';
-                disconnectBtn.style.display = 'block';
-                audioIndicator.style.display = 'flex';
-
-            } catch (error) {
-                console.error('Error starting conversation:', error);
-                updateStatus('disconnected', `Error: ${error.message}`);
-                connectBtn.disabled = false;
-            }
+          updateStatus('disconnected', 'Disconnected');
+          connectBtn.style.display = 'block';
+          connectBtn.disabled = false;
+          disconnectBtn.style.display = 'none';
+          audioIndicator.style.display = 'none';
+          sessionId = null;
+        } catch (error) {
+          console.error('Error ending conversation:', error);
         }
+      }
 
-        async function endConversation() {
-            try {
-                if (room) {
-                    await room.disconnect();
-                }
+      function handleTrackSubscribed(track, publication, participant) {
+        console.log('Track subscribed:', track.kind);
 
-                if (sessionId) {
-                    const apiUrl = document.getElementById('apiUrl').value;
-                    await fetch(`${apiUrl}/api/conversation/${sessionId}/end`, {
-                        method: 'POST'
-                    });
-                }
-
-                updateStatus('disconnected', 'Disconnected');
-                connectBtn.style.display = 'block';
-                connectBtn.disabled = false;
-                disconnectBtn.style.display = 'none';
-                audioIndicator.style.display = 'none';
-                sessionId = null;
-
-            } catch (error) {
-                console.error('Error ending conversation:', error);
-            }
+        if (track.kind === LivekitClient.Track.Kind.Audio) {
+          const element = track.attach();
+          audioContainer.appendChild(element);
+          console.log('Audio track attached from:', participant.identity);
         }
+      }
 
-        function handleTrackSubscribed(track, publication, participant) {
-            console.log('Track subscribed:', track.kind);
+      function handleTrackUnsubscribed(track, publication, participant) {
+        track.detach().forEach(element => element.remove());
+      }
 
-            if (track.kind === LivekitClient.Track.Kind.Audio) {
-                const element = track.attach();
-                audioContainer.appendChild(element);
-                console.log('Audio track attached from:', participant.identity);
-            }
-        }
+      function handleDisconnect() {
+        console.log('Disconnected from room');
+        endConversation();
+      }
 
-        function handleTrackUnsubscribed(track, publication, participant) {
-            track.detach().forEach(element => element.remove());
-        }
-
-        function handleDisconnect() {
-            console.log('Disconnected from room');
-            endConversation();
-        }
-
-        connectBtn.addEventListener('click', startConversation);
-        disconnectBtn.addEventListener('click', endConversation);
+      connectBtn.addEventListener('click', startConversation);
+      disconnectBtn.addEventListener('click', endConversation);
     </script>
-</body>
+  </body>
 </html>
