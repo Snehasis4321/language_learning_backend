@@ -31,11 +31,11 @@ router.post('/start', optionalAuth, async (req: AuthRequest, res: Response): Pro
       console.log(`✨ Using personalized system prompt for user: ${userId}`);
     }
 
-    // Save session to database if user is authenticated
-    if (userId) {
+    // Save session to database only if user is authenticated (has Firebase UID)
+    if (req.user?.uid) {
       await dbService.createSession({
         id: session.id,
-        user_id: userId,
+        user_id: req.user.uid,
         difficulty: session.difficulty,
         topic: session.topic,
         room_name: session.roomName,
