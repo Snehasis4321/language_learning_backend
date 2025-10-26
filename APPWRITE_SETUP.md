@@ -20,15 +20,52 @@ This guide will help you set up Appwrite for the language learning application a
 1. Create a new project called "language_learning"
 2. Note the Project ID (you'll need this for APPWRITE_PROJECT_ID)
 
-## 2. Create Database
+## 2. Automated Setup (Recommended) ⚡
 
-1. Go to Database section
-2. Create a new database called "language_learning_db"
-3. Note the Database ID
+Instead of manually creating collections, use the automated setup script:
 
-## 3. Create Collections
+### Update Environment Variables
 
-Create the following collections with these attributes:
+First, update your `.env` file with Appwrite credentials:
+
+```bash
+# Appwrite Configuration
+APPWRITE_ENDPOINT=http://localhost/v1
+APPWRITE_PROJECT_ID=your-project-id-here
+APPWRITE_API_KEY=your-admin-api-key-here
+APPWRITE_DATABASE_ID=language_learning_db
+APPWRITE_STORAGE_BUCKET_ID=tts_cache
+```
+
+### Create API Key
+
+1. Go to **API Keys** section in Appwrite Console
+2. Create a new API key with these scopes:
+   - `databases.read`
+   - `databases.write`
+   - `storage.read`
+   - `storage.write`
+   - `collections.read`
+   - `collections.write`
+   - `attributes.read`
+   - `attributes.write`
+3. Copy the API key and add it to your `.env` file
+
+### Run Automated Setup
+
+```bash
+cd language_learning_backend
+pnpm setup:appwrite
+```
+
+This script will automatically:
+- ✅ Create the database (`language_learning_db`)
+- ✅ Create all 7 collections with proper attributes
+- ✅ Set up correct permissions for each collection
+
+## 3. Manual Setup (Alternative)
+
+If you prefer to create collections manually, follow these steps:
 
 ### Collection: `users`
 - **Collection ID**: `users`
@@ -117,36 +154,31 @@ Attributes:
 
 ## 4. Create Storage Bucket
 
-1. Go to Storage section
+After running the automated setup, create the storage bucket:
+
+1. Go to **Storage** section in Appwrite Console
 2. Create a new bucket called "tts_cache"
 3. **Bucket ID**: `tts_cache`
 4. **Permissions**: Set to allow file read/write for authenticated users
-5. **File Security**: Allow common file types (mp3, etc.)
+5. **File Security**: Allow common audio file types (mp3, wav, etc.)
 
-## 5. Create API Key
+## 5. Test the Setup
 
-1. Go to API Keys section
-2. Create a new API key with the following scopes:
-   - `databases.read`
-   - `databases.write`
-   - `storage.read`
-   - `storage.write`
-   - `users.read`
-   - `users.write`
-3. Note the API Key (you'll need this for APPWRITE_API_KEY)
+1. Start your backend server:
+   ```bash
+   cd language_learning_backend
+   pnpm dev
+   ```
 
-## 6. Update Environment Variables
+2. Test the health endpoint:
+   ```bash
+   curl http://localhost:3550/health
+   ```
 
-Update your `.env` file with the Appwrite configuration:
-
-```bash
-# Appwrite Configuration
-APPWRITE_ENDPOINT=http://localhost/v1
-APPWRITE_PROJECT_ID=your-project-id-here
-APPWRITE_API_KEY=your-api-key-here
-APPWRITE_DATABASE_ID=language_learning_db
-APPWRITE_STORAGE_BUCKET_ID=tts_cache
-```
+3. Test the status endpoint:
+   ```bash
+   curl http://localhost:3550/status
+   ```
 
 ## 7. Test the Migration
 
@@ -168,6 +200,12 @@ APPWRITE_STORAGE_BUCKET_ID=tts_cache
 
 ## Troubleshooting
 
+### Automated Setup Issues:
+
+1. **API Key Permissions**: Ensure your API key has all required scopes (databases, collections, attributes, storage)
+2. **Environment Variables**: Double-check all APPWRITE_* variables are set correctly
+3. **Appwrite Server**: Make sure Appwrite is running and accessible
+
 ### Common Issues:
 
 1. **CORS Issues**: Make sure your Appwrite server allows requests from your backend
@@ -181,6 +219,7 @@ APPWRITE_STORAGE_BUCKET_ID=tts_cache
 2. Use Appwrite Console to verify data
 3. Test API calls directly in the console
 4. Verify environment variables are loaded correctly
+5. Run the setup script with verbose logging if needed
 
 ## Next Steps
 

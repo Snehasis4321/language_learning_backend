@@ -9,6 +9,7 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "start:agent": "node dist/agent-worker.js",
+    "setup:appwrite": "tsx scripts/setup-appwrite.ts",
     "cleanup": "tsx scripts/cleanup-sessions.ts",
     "cleanup:auto": "tsx scripts/auto-cleanup.ts",
     "cleanup:watch": "tsx scripts/auto-cleanup.ts --watch",
