@@ -1,3 +1,6 @@
+// COMMENTED OUT - PostgreSQL Database (keeping for reference)
+// Migrated to Appwrite Database - see src/services/appwrite-db.service.ts
+/*
 import { Pool, QueryResult } from 'pg';
 
 const pool = new Pool({
@@ -74,3 +77,4 @@ export const testConnection = async (): Promise<void> => {
 };
 
 export default pool;
+*/

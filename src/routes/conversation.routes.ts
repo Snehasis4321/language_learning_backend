@@ -6,9 +6,9 @@ import { agentService } from '../services/agent.service';
 import { UserService } from '../services/user.service';
 import { StartConversationRequest, StartConversationResponse } from '../types/conversation';
 import { config } from '../config/env';
-import { optionalAuth, AuthRequest } from '../middleware/auth.middleware';
-import { dbService } from '../services/db.service';
-import { s3Service } from '../services/s3.service';
+import { optionalAppwriteAuth, AppwriteAuthRequest } from '../middleware/appwrite-auth.middleware';
+import { AppwriteDatabaseService } from '../services/appwrite-db.service';
+import { AppwriteStorageService } from '../services/appwrite-storage.service';
 
 const router: Router = Router();
 
@@ -16,7 +16,7 @@ const router: Router = Router();
  * POST /api/conversation/start
  * Start a new conversation session
  */
-router.post('/start', optionalAuth, async (req: AuthRequest, res: Response): Promise<void> => {
+router.post('/start', optionalAppwriteAuth, async (req: AppwriteAuthRequest, res: Response): Promise<void> => {
   try {
     const request: StartConversationRequest = req.body;
     const userId = req.user?.uid || request.userId;
@@ -46,9 +46,9 @@ router.post('/start', optionalAuth, async (req: AuthRequest, res: Response): Pro
       console.log(`✨ Using personalized system prompt for user: ${userId}`);
     }
 
-    // Save session to database only if user is authenticated (has Firebase UID)
+    // Save session to database only if user is authenticated (has Appwrite UID)
     if (req.user?.uid) {
-      await dbService.createSession({
+      await AppwriteDatabaseService.createSession({
         id: session.id,
         user_id: req.user.uid,
         difficulty: session.difficulty,
@@ -112,7 +112,7 @@ router.post('/start', optionalAuth, async (req: AuthRequest, res: Response): Pro
  * POST /api/conversation/:sessionId/end
  * End a conversation session
  */
-router.post('/:sessionId/end', optionalAuth, async (req: AuthRequest, res: Response): Promise<void> => {
+router.post('/:sessionId/end', optionalAppwriteAuth, async (req: AppwriteAuthRequest, res: Response): Promise<void> => {
   try {
     const { sessionId } = req.params;
     const session = sessionStore.get(sessionId);
@@ -124,7 +124,7 @@ router.post('/:sessionId/end', optionalAuth, async (req: AuthRequest, res: Respo
 
     // End session in database if it exists
     if (req.user) {
-      await dbService.endSession(sessionId);
+      await AppwriteDatabaseService.endSession(sessionId);
     }
 
     // Mark session as ended
@@ -287,20 +287,19 @@ router.post('/tts', async (req: Request, res: Response): Promise<void> => {
     }
 
     // Generate chat_id from text and voiceId
-    const chatId = s3Service.generateChatId(text, voiceId);
+    const chatId = AppwriteStorageService.generateChatId(text, voiceId);
 
     // Check if TTS cache exists
-    const cachedTTS = await dbService.getTTSCache(chatId);
+    const cachedTTS = await AppwriteDatabaseService.getTTSCache(chatId);
 
     if (cachedTTS) {
       console.log(`✅ TTS cache hit for chat_id: ${chatId}`);
 
-      // Generate presigned URL for the cached audio
-      const s3Key = s3Service.extractS3Key(cachedTTS.s3_url);
-      const presignedUrl = await s3Service.getPresignedUrl(s3Key, 3600); // 1 hour expiry
+      // Generate file URL for the cached audio
+      const fileUrl = AppwriteStorageService.getFileUrl(cachedTTS.appwrite_file_id);
 
-      // Redirect to presigned URL
-      res.redirect(presignedUrl);
+      // Redirect to file URL
+      res.redirect(fileUrl);
       return;
     }
 
@@ -310,17 +309,15 @@ router.post('/tts', async (req: Request, res: Response): Promise<void> => {
     // Generate audio using Cartesia
     const audioBuffer = await cartesiaService.generateSpeech(text, voiceId);
 
-    // Upload to S3
-    const s3Url = await s3Service.uploadAudio(chatId, audioBuffer);
-    const s3Key = s3Service.generateS3Key(chatId);
+    // Upload to Appwrite Storage
+    await AppwriteStorageService.uploadAudio(chatId, audioBuffer);
 
     // Save to database
-    await dbService.saveTTSCache({
+    await AppwriteDatabaseService.saveTTSCache({
       chat_id: chatId,
       text,
       voice_id: voiceId,
-      s3_url: s3Url,
-      s3_key: s3Key,
+      appwrite_file_id: chatId, // Using chatId as file ID for simplicity
     });
 
     console.log(`✅ TTS cached successfully with chat_id: ${chatId}`);

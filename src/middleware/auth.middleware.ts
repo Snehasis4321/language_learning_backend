@@ -1,7 +1,8 @@
-import { Request, Response, NextFunction } from 'express';
-import { auth } from '../config/firebase';
+// COMMENTED OUT - Firebase Auth Middleware (keeping for reference)
+// Migrated to Appwrite Auth - see src/middleware/appwrite-auth.middleware.ts
 
-export interface AuthRequest extends Request {
+// Legacy Firebase auth interfaces and functions - no longer used
+export interface AuthRequest {
   user?: {
     uid: string;
     email?: string;
@@ -9,72 +10,11 @@ export interface AuthRequest extends Request {
   };
 }
 
-/**
- * Middleware to verify Firebase Auth token
- * Expects Authorization header with format: "Bearer <token>"
- */
-export const verifyFirebaseToken = async (
-  req: AuthRequest,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const authHeader = req.headers.authorization;
-
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      res.status(401).json({ error: 'Unauthorized', message: 'No token provided' });
-      return;
-    }
-
-    const token = authHeader.split('Bearer ')[1];
-
-    // Verify the token with Firebase Admin
-    const decodedToken = await auth.verifyIdToken(token);
-
-    // Attach user info to request
-    req.user = {
-      uid: decodedToken.uid,
-      email: decodedToken.email,
-      displayName: decodedToken.name,
-    };
-
-    next();
-  } catch (error) {
-    console.error('Auth middleware error:', error);
-    res.status(401).json({
-      error: 'Unauthorized',
-      message: error instanceof Error ? error.message : 'Invalid token',
-    });
-  }
+// These functions are no longer used - replaced by Appwrite auth
+export const verifyFirebaseToken = () => {
+  throw new Error('Firebase auth has been migrated to Appwrite');
 };
 
-/**
- * Optional auth middleware - doesn't block if no token
- * Useful for endpoints that work with or without auth
- */
-export const optionalAuth = async (
-  req: AuthRequest,
-  _res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const authHeader = req.headers.authorization;
-
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      const token = authHeader.split('Bearer ')[1];
-      const decodedToken = await auth.verifyIdToken(token);
-
-      req.user = {
-        uid: decodedToken.uid,
-        email: decodedToken.email,
-        displayName: decodedToken.name,
-      };
-    }
-
-    next();
-  } catch (error) {
-    // Silently fail for optional auth
-    console.warn('Optional auth failed:', error);
-    next();
-  }
+export const optionalAuth = () => {
+  throw new Error('Firebase auth has been migrated to Appwrite');
 };

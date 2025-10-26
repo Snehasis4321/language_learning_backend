@@ -1,3 +1,6 @@
+// COMMENTED OUT - AWS S3 Storage Service (keeping for reference)
+// Migrated to Appwrite Storage - see src/services/appwrite-storage.service.ts
+/*
 import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { config } from '../config/env';
@@ -24,17 +27,10 @@ class S3Service {
     }
   }
 
-  /**
-   * Generate a unique S3 key for TTS audio based on chat_id
-   */
   generateS3Key(chatId: string): string {
     return `tts-cache/${chatId}.mp3`;
   }
 
-  /**
-   * Generate a hash-based chat_id from text and voiceId
-   * This ensures the same text + voice combination always gets the same chat_id
-   */
   generateChatId(text: string, voiceId?: string): string {
     const hash = crypto
       .createHash('sha256')
@@ -43,9 +39,6 @@ class S3Service {
     return hash.substring(0, 32); // Use first 32 characters
   }
 
-  /**
-   * Upload audio buffer to S3
-   */
   async uploadAudio(chatId: string, audioBuffer: Buffer): Promise<string> {
     if (!this.bucketName) {
       throw new Error('S3 bucket name not configured');
@@ -72,10 +65,6 @@ class S3Service {
     }
   }
 
-  /**
-   * Generate a presigned URL for accessing the audio file
-   * URL expires in 1 hour by default
-   */
   async getPresignedUrl(s3Key: string, expiresIn: number = 3600): Promise<string> {
     if (!this.bucketName) {
       throw new Error('S3 bucket name not configured');
@@ -95,17 +84,11 @@ class S3Service {
     }
   }
 
-  /**
-   * Get the S3 URL from a chat_id
-   */
   getS3Url(chatId: string): string {
     const s3Key = this.generateS3Key(chatId);
     return `https://${this.bucketName}.s3.${config.aws.region}.amazonaws.com/${s3Key}`;
   }
 
-  /**
-   * Extract S3 key from S3 URL
-   */
   extractS3Key(s3Url: string): string {
     const urlParts = s3Url.split('/');
     // Get everything after the bucket domain
@@ -114,3 +97,4 @@ class S3Service {
 }
 
 export const s3Service = new S3Service();
+*/

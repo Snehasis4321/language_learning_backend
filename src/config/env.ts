@@ -34,6 +34,14 @@ export const config = {
     port: parseInt(process.env.DB_PORT || '5432'),
     name: process.env.DB_NAME || '',
   },
+
+  appwrite: {
+    endpoint: process.env.APPWRITE_ENDPOINT || 'http://localhost/v1',
+    projectId: process.env.APPWRITE_PROJECT_ID || '',
+    apiKey: process.env.APPWRITE_API_KEY || '',
+    databaseId: process.env.APPWRITE_DATABASE_ID || 'language_learning_db',
+    storageBucketId: process.env.APPWRITE_STORAGE_BUCKET_ID || 'tts_cache',
+  },
 } as const;
 
 // Validate required environment variables

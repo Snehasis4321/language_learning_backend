@@ -1,3 +1,6 @@
+// COMMENTED OUT - PostgreSQL Database Service (keeping for reference)
+// Migrated to Appwrite Database - see src/services/appwrite-db.service.ts
+/*
 import { query } from '../config/database';
 
 export interface User {
@@ -273,3 +276,4 @@ export const dbService = {
     );
   },
 };
+*/

@@ -1,3 +1,6 @@
+// COMMENTED OUT - Firebase Auth (keeping for reference)
+// Migrated to Appwrite Auth - see src/config/appwrite.ts
+/*
 import admin from 'firebase-admin';
 
 // Initialize Firebase Admin SDK
@@ -27,3 +30,4 @@ const initializeFirebase = () => {
 
 export const firebaseAdmin = initializeFirebase();
 export const auth = firebaseAdmin.auth();
+*/
