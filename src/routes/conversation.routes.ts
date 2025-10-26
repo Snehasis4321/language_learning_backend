@@ -198,7 +198,7 @@ router.get('/sessions/active', async (_req: Request, res: Response): Promise<voi
  * POST /api/conversation/test-cerebras
  * Test Cerebras API connection with conversation memory
  */
-router.post('/test-cerebras', async (req: Request, res: Response): Promise<void> => {
+router.post('/test-cerebras', optionalAppwriteAuth, async (req: AppwriteAuthRequest, res: Response): Promise<void> => {
   try {
     const {
       message,
@@ -211,6 +211,13 @@ router.post('/test-cerebras', async (req: Request, res: Response): Promise<void>
 
     if (!message) {
       res.status(400).json({ error: 'Message is required' });
+      return;
+    }
+
+    // Get user ID from authenticated user or from request body
+    const userId = req.user?.uid || req.body.userId;
+    if (!userId) {
+      res.status(400).json({ error: 'User ID is required' });
       return;
     }
 
@@ -245,6 +252,34 @@ router.post('/test-cerebras', async (req: Request, res: Response): Promise<void>
       topic,
       customSystemPrompt
     );
+
+    // Create or get session for text chat
+    // For text chat, we'll use a simple session ID based on user and date
+    const sessionId = `text_${userId}_${new Date().toISOString().split('T')[0]}`;
+
+    // Save user message to database
+    try {
+      await AppwriteDatabaseService.saveMessage({
+        session_id: sessionId,
+        role: 'user',
+        content: message,
+      });
+      console.log(`💬 Saved user message to session: ${sessionId}`);
+    } catch (error) {
+      console.error('Failed to save user message:', error);
+    }
+
+    // Save assistant message to database
+    try {
+      await AppwriteDatabaseService.saveMessage({
+        session_id: sessionId,
+        role: 'assistant',
+        content: result.response,
+      });
+      console.log(`💬 Saved assistant message to session: ${sessionId}`);
+    } catch (error) {
+      console.error('Failed to save assistant message:', error);
+    }
 
     // Build updated history for frontend
     const updatedHistory = [
