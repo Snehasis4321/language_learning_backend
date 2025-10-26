@@ -1,6 +1,4 @@
-// COMMENTED OUT - AWS S3 Storage Service (keeping for reference)
-// Migrated to Appwrite Storage - see src/services/appwrite-storage.service.ts
-/*
+// AWS S3 Storage Service for TTS caching
 import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { config } from '../config/env';
@@ -11,19 +9,21 @@ class S3Service {
   private bucketName: string;
 
   constructor() {
-    // Initialize S3 client with AWS CLI credentials (IAM role)
+    console.log('🔧 Initializing S3 client...');
+    console.log(`  Region: ${config.aws.region}`);
+    console.log(`  Bucket: ${config.aws.s3BucketName}`);
+
+    // Initialize S3 client with explicit credential provider
     this.s3Client = new S3Client({
       region: config.aws.region,
-      // Credentials will be automatically loaded from:
-      // 1. Environment variables (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
-      // 2. AWS credentials file (~/.aws/credentials)
-      // 3. IAM role for EC2/ECS instances
     });
 
     this.bucketName = config.aws.s3BucketName;
 
     if (!this.bucketName) {
       console.warn('⚠️ AWS S3 bucket name not configured. TTS caching will be disabled.');
+    } else {
+      console.log('✅ S3 client initialized successfully');
     }
   }
 
@@ -41,10 +41,13 @@ class S3Service {
 
   async uploadAudio(chatId: string, audioBuffer: Buffer): Promise<string> {
     if (!this.bucketName) {
+      console.error('❌ S3 bucket name not configured');
       throw new Error('S3 bucket name not configured');
     }
 
     const s3Key = this.generateS3Key(chatId);
+    console.log(`📤 Starting S3 upload to bucket: ${this.bucketName}, key: ${s3Key}`);
+    console.log(`📤 Audio buffer size: ${audioBuffer.length} bytes`);
 
     const command = new PutObjectCommand({
       Bucket: this.bucketName,
@@ -55,12 +58,27 @@ class S3Service {
     });
 
     try {
-      await this.s3Client.send(command);
-      const s3Url = `https://${this.bucketName}.s3.${config.aws.region}.amazonaws.com/${s3Key}`;
+      console.log(`📤 Sending S3 put command...`);
+      const startTime = Date.now();
+      const result = await this.s3Client.send(command);
+      const uploadTime = Date.now() - startTime;
+      console.log(`📤 S3 upload completed in ${uploadTime}ms`);
+
+      // Generate presigned URL for private bucket access
+      console.log(`🔗 Generating presigned URL for: ${s3Key}`);
+      const presignedUrl = await this.getPresignedUrl(s3Key, 3600); // 1 hour expiry
       console.log(`✅ Uploaded TTS audio to S3: ${s3Key}`);
-      return s3Url;
+      console.log(`✅ Presigned URL generated: ${presignedUrl.substring(0, 100)}...`);
+      return presignedUrl;
     } catch (error) {
       console.error('❌ Failed to upload to S3:', error);
+      console.error('❌ S3 Error details:', {
+        bucket: this.bucketName,
+        key: s3Key,
+        region: config.aws.region,
+        error: error.message,
+        stack: error.stack
+      });
       throw error;
     }
   }
@@ -97,4 +115,3 @@ class S3Service {
 }
 
 export const s3Service = new S3Service();
-*/

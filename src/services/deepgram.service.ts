@@ -11,10 +11,13 @@ export class DeepgramService {
   };
 
   constructor() {
+    const apiKey = config.deepgram.apiKey;
+    console.log('🔧 Deepgram service initialized with API key present:', !!apiKey);
+
     this.client = axios.create({
       baseURL: 'https://api.deepgram.com',
       headers: {
-        'Authorization': `Token ${config.deepgram.apiKey}`,
+        'Authorization': `Token ${apiKey}`,
         'Content-Type': 'application/json',
       },
       timeout: 30000,
@@ -43,8 +46,8 @@ export class DeepgramService {
       console.log(`  Model: ${model}`);
       console.log(`  Text length: ${text.length} characters`);
 
-      const response = await this.client.post(
-        '/v1/speak',
+      const response = await axios.post(
+        'https://api.deepgram.com/v1/speak',
         {
           text: text,
         },
@@ -52,6 +55,10 @@ export class DeepgramService {
           params: {
             model: model,
             encoding: 'mp3',
+          },
+          headers: {
+            'Authorization': `Token ${config.deepgram.apiKey}`,
+            'Content-Type': 'application/json',
           },
           responseType: 'arraybuffer',
           timeout: 30000, // 30 second timeout
@@ -97,11 +104,25 @@ export class DeepgramService {
    */
   async testConnection(): Promise<boolean> {
     try {
-      // Try to generate a simple speech
-      const audio = await this.generateSpeech('Hello');
-      return audio.length > 0;
+      console.log('🧪 Testing Deepgram connection...');
+      const response = await axios.post(
+        'https://api.deepgram.com/v1/speak',
+        { text: 'Hello' },
+        {
+          params: { model: 'aura-2-thalia-en', encoding: 'mp3' },
+          headers: {
+            'Authorization': `Token ${config.deepgram.apiKey}`,
+            'Content-Type': 'application/json',
+          },
+          responseType: 'arraybuffer',
+          timeout: 10000,
+        }
+      );
+      const result = response.data && Buffer.from(response.data).length > 0;
+      console.log('✅ Deepgram connection test successful');
+      return result;
     } catch (error) {
-      console.error('Deepgram connection test failed:', error);
+      console.error('❌ Deepgram connection test failed:', error.message);
       return false;
     }
   }

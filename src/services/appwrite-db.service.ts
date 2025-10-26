@@ -270,7 +270,8 @@ export const AppwriteDatabaseService = {
     chat_id: string;
     text: string;
     voice_id?: string;
-    appwrite_file_id: string;
+    s3_url: string;
+    s3_key: string;
   }): Promise<void> {
     try {
       await makeRequest('POST', `/databases/${DATABASE_ID}/collections/${COLLECTIONS.TTS_CACHE}/documents`, {

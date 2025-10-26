@@ -8,7 +8,7 @@ import { StartConversationRequest, StartConversationResponse } from '../types/co
 import { config } from '../config/env';
 import { optionalAppwriteAuth, AppwriteAuthRequest } from '../middleware/appwrite-auth.middleware';
 import { AppwriteDatabaseService } from '../services/appwrite-db.service';
-import { AppwriteStorageService } from '../services/appwrite-storage.service';
+import { s3Service } from '../services/s3.service';
 
 const router: Router = Router();
 
@@ -309,20 +309,47 @@ router.post('/test-cerebras', optionalAppwriteAuth, async (req: AppwriteAuthRequ
 });
 
 /**
+ * POST /api/conversation/tts-test
+ * Simple test endpoint
+ */
+router.post('/tts-test', async (req: Request, res: Response): Promise<void> => {
+  try {
+    console.log('🧪 Testing deepgram service...');
+    const result = await deepgramService.testConnection();
+    res.json({
+      message: 'Deepgram service test',
+      connection: result,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: 'Deepgram service test failed',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+/**
  * POST /api/conversation/tts
  * Generate text-to-speech audio with S3 caching
  */
 router.post('/tts', async (req: Request, res: Response): Promise<void> => {
   try {
+    console.log('🎯 TTS request received:', { text: req.body.text?.substring(0, 50), voiceId: req.body.voiceId });
+
     const { text, voiceId } = req.body;
 
     if (!text) {
+      console.log('❌ TTS request rejected: no text provided');
       res.status(400).json({ error: 'Text is required' });
       return;
     }
 
+    console.log('✅ TTS request validated, proceeding with generation');
+
     // Generate chat_id from text and voiceId
-    const chatId = AppwriteStorageService.generateChatId(text, voiceId);
+    const chatId = s3Service.generateChatId(text, voiceId);
 
     // Check if TTS cache exists
     const cachedTTS = await AppwriteDatabaseService.getTTSCache(chatId);
@@ -330,8 +357,10 @@ router.post('/tts', async (req: Request, res: Response): Promise<void> => {
     if (cachedTTS) {
       console.log(`✅ TTS cache hit for chat_id: ${chatId}`);
 
-      // Generate file URL for the cached audio
-      const fileUrl = AppwriteStorageService.getFileUrl(cachedTTS.appwrite_file_id);
+      // Generate fresh presigned URL from cached S3 key
+      const s3Key = cachedTTS.s3_key || s3Service.generateS3Key(chatId);
+      const fileUrl = await s3Service.getPresignedUrl(s3Key, 3600); // 1 hour expiry
+      console.log(`🔄 Generated fresh presigned URL for cached audio: ${fileUrl.substring(0, 100)}...`);
 
       // Redirect to file URL
       res.redirect(fileUrl);
@@ -344,17 +373,30 @@ router.post('/tts', async (req: Request, res: Response): Promise<void> => {
     // Generate audio using Deepgram
     const audioBuffer = await deepgramService.generateSpeech(text, voiceId);
 
-    // TODO: Re-enable caching once Appwrite storage permissions are configured
-    // For now, skip caching and return audio directly
-    console.log(`✅ TTS generated successfully (caching disabled temporarily)`);
+    // Upload to S3 for caching
+    const s3Url = await s3Service.uploadAudio(chatId, audioBuffer);
+    console.log(`✅ TTS uploaded to S3 successfully: ${s3Url}`);
 
-    // Set appropriate headers for audio streaming
-    res.setHeader('Content-Type', 'audio/mpeg');
-    res.setHeader('Content-Length', audioBuffer.length);
-    res.setHeader('Cache-Control', 'public, max-age=31536000'); // Cache for 1 year
+    // Save to database for caching
+    try {
+      const s3Key = s3Service.generateS3Key(chatId);
+      await AppwriteDatabaseService.saveTTSCache({
+        chat_id: chatId,
+        text,
+        voice_id: voiceId,
+        s3_url: s3Url, // Store presigned URL (will be regenerated on cache hits)
+        s3_key: s3Key,
+      });
+      console.log(`💾 TTS cache saved to database: ${chatId}`);
+    } catch (error) {
+      console.error('Failed to save TTS cache to database:', error);
+      // Continue anyway - S3 upload worked
+    }
 
-    // Send audio data
-    res.send(audioBuffer);
+    // Redirect to S3 URL (same as cache hit behavior)
+    console.log(`🔄 Redirecting to S3 URL: ${s3Url}`);
+    res.redirect(s3Url);
+    console.log('✅ Redirect sent to client');
   } catch (error) {
     console.error('Error generating TTS:', error);
     res.status(500).json({
