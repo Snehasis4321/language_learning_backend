@@ -8,7 +8,7 @@ import userRoutes from './routes/user.routes';
 import appwriteAuthRoutes from './routes/appwrite-auth.routes';
 import { cerebrasService } from './services/cerebras.service';
 import { liveKitService } from './services/livekit.service';
-import { cartesiaService } from './services/cartesia.service';
+import { deepgramService } from './services/deepgram.service';
 // import { agentService } from './services/agent.service'; // Unused - agent runs separately
 // import { testConnection } from './config/database'; // COMMENTED OUT - migrated to Appwrite
 
@@ -54,7 +54,7 @@ app.get('/status', async (_req: Request, res: Response): Promise<void> => {
   try {
     const cerebrasConnected = await cerebrasService.testConnection();
     const liveKitConnected = await liveKitService.testConnection();
-    const cartesiaConnected = await cartesiaService.testConnection();
+    const deepgramConnected = await deepgramService.testConnection();
 
     let appwriteConnected = false;
     try {
@@ -70,7 +70,7 @@ app.get('/status', async (_req: Request, res: Response): Promise<void> => {
       services: {
         cerebras: cerebrasConnected ? 'connected' : 'disconnected',
         livekit: liveKitConnected ? 'connected' : 'disconnected',
-        cartesia: cartesiaConnected ? 'connected' : 'disconnected',
+        deepgram: deepgramConnected ? 'connected' : 'disconnected',
         appwrite: appwriteConnected ? 'connected' : 'disconnected',
       },
       timestamp: new Date().toISOString(),

@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { liveKitService, sessionStore } from '../services/livekit.service';
 import { cerebrasService } from '../services/cerebras.service';
-import { cartesiaService } from '../services/cartesia.service';
+import { deepgramService } from '../services/deepgram.service';
 import { agentService } from '../services/agent.service';
 import { UserService } from '../services/user.service';
 import { StartConversationRequest, StartConversationResponse } from '../types/conversation';
@@ -341,21 +341,12 @@ router.post('/tts', async (req: Request, res: Response): Promise<void> => {
     // Cache miss - generate new TTS
     console.log(`🔊 TTS cache miss. Generating TTS for: "${text.substring(0, 50)}..."`);
 
-    // Generate audio using Cartesia
-    const audioBuffer = await cartesiaService.generateSpeech(text, voiceId);
+    // Generate audio using Deepgram
+    const audioBuffer = await deepgramService.generateSpeech(text, voiceId);
 
-    // Upload to Appwrite Storage
-    await AppwriteStorageService.uploadAudio(chatId, audioBuffer);
-
-    // Save to database
-    await AppwriteDatabaseService.saveTTSCache({
-      chat_id: chatId,
-      text,
-      voice_id: voiceId,
-      appwrite_file_id: chatId, // Using chatId as file ID for simplicity
-    });
-
-    console.log(`✅ TTS cached successfully with chat_id: ${chatId}`);
+    // TODO: Re-enable caching once Appwrite storage permissions are configured
+    // For now, skip caching and return audio directly
+    console.log(`✅ TTS generated successfully (caching disabled temporarily)`);
 
     // Set appropriate headers for audio streaming
     res.setHeader('Content-Type', 'audio/mpeg');

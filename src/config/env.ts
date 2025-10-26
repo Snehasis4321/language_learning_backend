@@ -22,6 +22,10 @@ export const config = {
     apiUrl: process.env.CARTESIA_API_URL || 'https://api.cartesia.ai',
   },
 
+  deepgram: {
+    apiKey: process.env.DEEPGRAM_API_KEY || '',
+  },
+
   aws: {
     region: process.env.AWS_REGION || 'us-east-1',
     s3BucketName: process.env.AWS_S3_BUCKET_NAME || '',
