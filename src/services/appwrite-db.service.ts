@@ -1,11 +1,8 @@
 import axios from 'axios';
 import { config } from '../config/env';
-import { ID } from 'appwrite';
+import { Client, Databases, ID, Query } from 'node-appwrite';
 
 const DATABASE_ID = config.appwrite.databaseId;
-const API_ENDPOINT = config.appwrite.endpoint;
-const PROJECT_ID = config.appwrite.projectId;
-const API_KEY = config.appwrite.apiKey;
 
 // Collection IDs (these need to be created in Appwrite)
 const COLLECTIONS = {
@@ -18,28 +15,12 @@ const COLLECTIONS = {
   TTS_CACHE: 'tts_cache',
 };
 
-const headers = {
-  'X-Appwrite-Project': PROJECT_ID,
-  'X-Appwrite-Key': API_KEY,
-  'Content-Type': 'application/json',
-};
+const client = new Client()
+  .setEndpoint(config.appwrite.endpoint)
+  .setProject(config.appwrite.projectId)
+  .setKey(config.appwrite.apiKey);
 
-async function makeRequest(method: 'POST' | 'GET' | 'PUT' | 'DELETE' | 'PATCH', url: string, data?: any) {
-  try {
-    const response = await axios({
-      method,
-      url: `${API_ENDPOINT}${url}`,
-      headers,
-      data,
-    });
-    return response.data;
-  } catch (error: any) {
-    if (error.response?.status === 404) {
-      return null;
-    }
-    throw error;
-  }
-}
+const databases = new Databases(client);
 
 export interface User {
   $id?: string;
@@ -79,6 +60,7 @@ export interface Session {
 export interface Message {
   $id?: string;
   session_id: string;
+  user_id?: string;
   role: 'user' | 'assistant';
   content: string;
   created_at?: string;
@@ -125,14 +107,16 @@ export const AppwriteDatabaseService = {
     topic?: string;
     room_name?: string;
   }): Promise<any> {
-    const result = await makeRequest('POST', `/databases/${DATABASE_ID}/collections/${COLLECTIONS.SESSIONS}/documents`, {
-      documentId: session.id,
-      data: {
+    const result = await databases.createDocument(
+      DATABASE_ID,
+      COLLECTIONS.SESSIONS,
+      session.id,
+      {
         ...session,
         started_at: new Date().toISOString(),
         status: 'active',
       }
-    });
+    );
     return result;
   },
 
@@ -146,13 +130,16 @@ export const AppwriteDatabaseService = {
       const endedAt = new Date();
       const durationSeconds = Math.floor((endedAt.getTime() - startedAt.getTime()) / 1000);
 
-      const result = await makeRequest('PATCH', `/databases/${DATABASE_ID}/collections/${COLLECTIONS.SESSIONS}/documents/${sessionId}`, {
-        data: {
+      const result = await databases.updateDocument(
+        DATABASE_ID,
+        COLLECTIONS.SESSIONS,
+        sessionId,
+        {
           ended_at: endedAt.toISOString(),
           duration_seconds: durationSeconds,
           status: 'completed',
         }
-      });
+      );
       return result;
     } catch (error) {
       console.error('End session error:', error);
@@ -162,10 +149,14 @@ export const AppwriteDatabaseService = {
 
   async getSessionById(sessionId: string): Promise<any> {
     try {
-      const result = await makeRequest('GET', `/databases/${DATABASE_ID}/collections/${COLLECTIONS.SESSIONS}/documents/${sessionId}`);
+      const result = await databases.getDocument(
+        DATABASE_ID,
+        COLLECTIONS.SESSIONS,
+        sessionId
+      );
       return result;
     } catch (error: any) {
-      if (error.response?.status === 404) {
+      if (error.code === 404) {
         return null;
       }
       throw error;
@@ -187,23 +178,69 @@ export const AppwriteDatabaseService = {
   // ===== Messages =====
   async saveMessage(message: {
     session_id: string;
+    user_id?: string;
     role: 'user' | 'assistant';
     content: string;
   }): Promise<any> {
     const documentId = ID.unique();
-    const result = await makeRequest('POST', `/databases/${DATABASE_ID}/collections/${COLLECTIONS.MESSAGES}/documents`, {
+    const result = await databases.createDocument(
+      DATABASE_ID,
+      COLLECTIONS.MESSAGES,
       documentId,
-      data: {
+      {
         ...message,
         created_at: new Date().toISOString(),
       }
-    });
-    return result || null;
+    );
+    return result;
   },
 
   async getSessionMessages(sessionId: string): Promise<any[]> {
-    const result = await makeRequest('GET', `/databases/${DATABASE_ID}/collections/${COLLECTIONS.MESSAGES}/documents?queries[]=${encodeURIComponent(`equal("session_id", "${sessionId}")`)}&queries[]=${encodeURIComponent('orderAsc("created_at")')}`);
-    return result?.documents || [];
+    const result = await databases.listDocuments(
+      DATABASE_ID,
+      COLLECTIONS.MESSAGES,
+      [
+        Query.equal('session_id', sessionId),
+        Query.orderAsc('created_at'),
+      ]
+    );
+    return result.documents;
+  },
+
+  async getUserMessages(userId: string, limit = 100): Promise<any[]> {
+    try {
+      const result = await databases.listDocuments(
+        DATABASE_ID,
+        COLLECTIONS.MESSAGES,
+        [
+          Query.equal('user_id', userId),
+          Query.orderDesc('created_at'),
+          Query.limit(limit),
+        ]
+      );
+      return result.documents;
+    } catch (error) {
+      console.error('Database query error:', error);
+      // Fallback: return empty array
+      return [];
+    }
+  },
+
+  async getAllMessages(limit = 100): Promise<any[]> {
+    try {
+      const result = await databases.listDocuments(
+        DATABASE_ID,
+        COLLECTIONS.MESSAGES,
+        [
+          Query.orderDesc('created_at'),
+          Query.limit(limit),
+        ]
+      );
+      return result.documents;
+    } catch (error) {
+      console.error('Database query error:', error);
+      return [];
+    }
   },
 
   // ===== User Progress =====
@@ -246,20 +283,25 @@ export const AppwriteDatabaseService = {
   // ===== TTS Cache =====
   async getTTSCache(chatId: string): Promise<any | null> {
     try {
-      const result = await makeRequest('GET', `/databases/${DATABASE_ID}/collections/${COLLECTIONS.TTS_CACHE}/documents/${chatId}`);
+      const result = await databases.getDocument(
+        DATABASE_ID,
+        COLLECTIONS.TTS_CACHE,
+        chatId
+      );
 
       // Update last_accessed_at if found
-      if (result) {
-        await makeRequest('PATCH', `/databases/${DATABASE_ID}/collections/${COLLECTIONS.TTS_CACHE}/documents/${chatId}`, {
-          data: {
-            last_accessed_at: new Date().toISOString(),
-          }
-        });
-      }
+      await databases.updateDocument(
+        DATABASE_ID,
+        COLLECTIONS.TTS_CACHE,
+        chatId,
+        {
+          last_accessed_at: new Date().toISOString(),
+        }
+      );
 
-      return result || null;
+      return result;
     } catch (error: any) {
-      if (error.response?.status === 404) {
+      if (error.code === 404) {
         return null;
       }
       throw error;
@@ -274,22 +316,27 @@ export const AppwriteDatabaseService = {
     s3_key: string;
   }): Promise<void> {
     try {
-      await makeRequest('POST', `/databases/${DATABASE_ID}/collections/${COLLECTIONS.TTS_CACHE}/documents`, {
-        documentId: ttsCache.chat_id,
-        data: {
+      await databases.createDocument(
+        DATABASE_ID,
+        COLLECTIONS.TTS_CACHE,
+        ttsCache.chat_id,
+        {
           ...ttsCache,
           created_at: new Date().toISOString(),
           last_accessed_at: new Date().toISOString(),
         }
-      });
+      );
     } catch (error: any) {
       // Handle duplicate key error (cache already exists)
-      if (error.response?.status === 409) {
-        await makeRequest('PATCH', `/databases/${DATABASE_ID}/collections/${COLLECTIONS.TTS_CACHE}/documents/${ttsCache.chat_id}`, {
-          data: {
+      if (error.code === 409) {
+        await databases.updateDocument(
+          DATABASE_ID,
+          COLLECTIONS.TTS_CACHE,
+          ttsCache.chat_id,
+          {
             last_accessed_at: new Date().toISOString(),
           }
-        });
+        );
       } else {
         throw error;
       }

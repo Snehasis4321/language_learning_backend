@@ -1,4 +1,5 @@
-import { account } from '../config/appwrite';
+import { users } from '../config/appwrite';
+import { ID } from 'node-appwrite';
 
 export class AppwriteAuthService {
   /**
@@ -63,7 +64,7 @@ export class AppwriteAuthService {
    */
   static async createUser(email: string, password: string, name?: string): Promise<any> {
     try {
-      const user = await account.create('unique()', email, password, name);
+      const user = await users.create(ID.unique(), email, password, name);
       return user;
     } catch (error) {
       console.error('Create user error:', error);

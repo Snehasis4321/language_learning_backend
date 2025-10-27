@@ -180,6 +180,26 @@ async function createFloatAttribute(collectionId: string, key: string, required:
   }
 }
 
+async function createIndex(collectionId: string, key: string, type: string, attributes: string[], orders?: string[]) {
+  try {
+    console.log(`Creating index: ${key}...`);
+    await makeRequest('POST', `/databases/${DATABASE_ID}/collections/${collectionId}/indexes`, {
+      key,
+      type,
+      attributes,
+      orders,
+    });
+    console.log(`✅ Index '${key}' created`);
+  } catch (error: any) {
+    if (error.response?.status === 409) {
+      console.log(`ℹ️ Index '${key}' already exists`);
+    } else {
+      console.error(`❌ Failed to create index '${key}':`, error.response?.data || error.message);
+      throw error;
+    }
+  }
+}
+
 async function setupCollections() {
   try {
     console.log('🚀 Starting Appwrite database setup...\n');
@@ -230,10 +250,13 @@ async function setupCollections() {
 
     // Messages collection
     await createCollection('messages', 'Messages');
-    await createStringAttribute('messages', 'session_id', 50, true);
+    await createStringAttribute('messages', 'session_id', 100, true);
+    await createStringAttribute('messages', 'user_id', 50, true);
     await createEnumAttribute('messages', 'role', ['user', 'assistant'], true);
     await createStringAttribute('messages', 'content', 10000, true);
     await createDatetimeAttribute('messages', 'created_at', true);
+    await createIndex('messages', 'user_id_index', 'key', ['user_id']);
+    await createIndex('messages', 'created_at_index', 'key', ['created_at'], ['DESC']);
 
     // User Progress collection
     await createCollection('user_progress', 'User Progress');

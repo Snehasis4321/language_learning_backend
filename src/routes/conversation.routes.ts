@@ -154,6 +154,35 @@ router.post('/:sessionId/end', optionalAppwriteAuth, async (req: AppwriteAuthReq
 });
 
 /**
+ * GET /api/conversation/messages
+ * Get all messages for the authenticated user
+ */
+router.get('/messages', optionalAppwriteAuth, async (req: AppwriteAuthRequest, res: Response): Promise<void> => {
+  try {
+    const userId = req.user?.uid;
+    if (!userId) {
+      res.status(401).json({ error: 'User not authenticated' });
+      return;
+    }
+
+    const limit = parseInt(req.query.limit as string) || 100;
+    const messages = await AppwriteDatabaseService.getUserMessages(userId, limit);
+
+    res.json({
+      messages,
+      count: messages.length,
+      userId,
+    });
+  } catch (error) {
+    console.error('Error getting user messages:', error);
+    res.status(500).json({
+      error: 'Failed to get user messages',
+      message: error instanceof Error ? error.message : 'Unknown error',
+    });
+  }
+});
+
+/**
  * GET /api/conversation/:sessionId
  * Get session details
  */
@@ -259,24 +288,26 @@ router.post('/test-cerebras', optionalAppwriteAuth, async (req: AppwriteAuthRequ
 
     // Save user message to database
     try {
-      await AppwriteDatabaseService.saveMessage({
+      const saveResult = await AppwriteDatabaseService.saveMessage({
         session_id: sessionId,
+        user_id: userId,
         role: 'user',
         content: message,
       });
-      console.log(`💬 Saved user message to session: ${sessionId}`);
+      console.log(`💬 Saved user message to session: ${sessionId}`, saveResult);
     } catch (error) {
       console.error('Failed to save user message:', error);
     }
 
     // Save assistant message to database
     try {
-      await AppwriteDatabaseService.saveMessage({
+      const saveResult = await AppwriteDatabaseService.saveMessage({
         session_id: sessionId,
+        user_id: userId,
         role: 'assistant',
         content: result.response,
       });
-      console.log(`💬 Saved assistant message to session: ${sessionId}`);
+      console.log(`💬 Saved assistant message to session: ${sessionId}`, saveResult);
     } catch (error) {
       console.error('Failed to save assistant message:', error);
     }

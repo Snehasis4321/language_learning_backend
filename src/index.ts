@@ -132,6 +132,7 @@ app.listen(PORT, async () => {
   console.log('    POST   /api/conversation/:id/end');
   console.log('    GET    /api/conversation/:id');
   console.log('    GET    /api/conversation/sessions/active');
+  console.log('    GET    /api/conversation/messages');
   console.log('    POST   /api/conversation/test-cerebras');
   console.log('  Users:');
   console.log('    POST   /api/users/profile');

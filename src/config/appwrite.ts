@@ -1,4 +1,4 @@
-import { Client, Account, Databases, Storage } from 'appwrite';
+import { Client, Users, Databases, Storage } from 'node-appwrite';
 
 // Initialize Appwrite client
 const initializeAppwrite = () => {
@@ -7,16 +7,17 @@ const initializeAppwrite = () => {
   // Configure Appwrite client
   client
     .setEndpoint(process.env.APPWRITE_ENDPOINT || 'http://localhost/v1')
-    .setProject(process.env.APPWRITE_PROJECT_ID || '');
+    .setProject(process.env.APPWRITE_PROJECT_ID || '')
+    .setKey(process.env.APPWRITE_API_KEY || '');
 
-  const account = new Account(client);
+  const users = new Users(client);
   const databases = new Databases(client);
   const storage = new Storage(client);
 
   console.log('✅ Appwrite client initialized');
 
-  return { client, account, databases, storage };
+  return { client, users, databases, storage };
 };
 
 export const appwrite = initializeAppwrite();
-export const { client, account, databases, storage } = appwrite;
+export const { client, users, databases, storage } = appwrite;
