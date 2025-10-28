@@ -218,75 +218,19 @@ async function setupCollections() {
     // Create collections and their attributes
     console.log('\n📋 Creating collections...\n');
 
-    // Users collection
-    await createCollection('users', 'Users');
-    await createStringAttribute('users', 'email', 254, true);
-    await createStringAttribute('users', 'display_name', 100, false);
-    await createDatetimeAttribute('users', 'created_at', true);
-    await createDatetimeAttribute('users', 'updated_at', true);
-
-    // User Profiles collection
-    await createCollection('user_profiles', 'User Profiles');
-    await createStringAttribute('user_profiles', 'user_id', 50, true);
-    await createStringAttribute('user_profiles', 'native_language', 50, false);
-    await createStringAttribute('user_profiles', 'target_language', 50, false);
-    await createEnumAttribute('user_profiles', 'proficiency_level', ['beginner', 'intermediate', 'advanced'], false);
-    await createStringAttribute('user_profiles', 'learning_goals', 500, false, true);
-    await createStringAttribute('user_profiles', 'preferred_topics', 500, false, true);
-    await createStringAttribute('user_profiles', 'custom_system_prompt', 1000, false);
-    await createDatetimeAttribute('user_profiles', 'created_at', true);
-    await createDatetimeAttribute('user_profiles', 'updated_at', true);
-
-    // Sessions collection
-    await createCollection('sessions', 'Sessions');
-    await createStringAttribute('sessions', 'user_id', 50, true);
-    await createStringAttribute('sessions', 'difficulty', 50, false);
-    await createStringAttribute('sessions', 'topic', 100, false);
-    await createStringAttribute('sessions', 'room_name', 100, false);
-    await createDatetimeAttribute('sessions', 'started_at', true);
-    await createDatetimeAttribute('sessions', 'ended_at', false);
-    await createIntegerAttribute('sessions', 'duration_seconds', false);
-    await createEnumAttribute('sessions', 'status', ['active', 'completed', 'abandoned'], true);
-
-    // Messages collection
-    await createCollection('messages', 'Messages');
-    await createStringAttribute('messages', 'session_id', 100, true);
-    await createStringAttribute('messages', 'user_id', 50, true);
-    await createEnumAttribute('messages', 'role', ['user', 'assistant'], true);
-    await createStringAttribute('messages', 'content', 10000, true);
-    await createDatetimeAttribute('messages', 'created_at', true);
-    await createIndex('messages', 'user_id_index', 'key', ['user_id']);
-    await createIndex('messages', 'created_at_index', 'key', ['created_at'], ['DESC']);
-
-    // User Progress collection
-    await createCollection('user_progress', 'User Progress');
-    await createStringAttribute('user_progress', 'user_id', 50, true);
-    await createStringAttribute('user_progress', 'session_id', 50, false);
-    await createStringAttribute('user_progress', 'metric_type', 100, true);
-    await createFloatAttribute('user_progress', 'metric_value', true);
-    await createDatetimeAttribute('user_progress', 'recorded_at', true);
-
-    // Saved Vocabulary collection
-    await createCollection('saved_vocabulary', 'Saved Vocabulary');
-    await createStringAttribute('saved_vocabulary', 'user_id', 50, true);
-    await createStringAttribute('saved_vocabulary', 'word_or_phrase', 200, true);
-    await createStringAttribute('saved_vocabulary', 'translation', 200, false);
-    await createStringAttribute('saved_vocabulary', 'context', 500, false);
-    await createStringAttribute('saved_vocabulary', 'difficulty_level', 50, false);
-    await createDatetimeAttribute('saved_vocabulary', 'created_at', true);
-
-    // TTS Cache collection
+    // TTS Cache collection (only create this one for now)
     await createCollection('tts_cache', 'TTS Cache');
     await createStringAttribute('tts_cache', 'chat_id', 50, true);
     await createStringAttribute('tts_cache', 'text', 10000, true);
     await createStringAttribute('tts_cache', 'voice_id', 50, false);
-    await createStringAttribute('tts_cache', 'appwrite_file_id', 50, true);
+    await createStringAttribute('tts_cache', 's3_url', 500, true);
+    await createStringAttribute('tts_cache', 's3_key', 200, true);
     await createDatetimeAttribute('tts_cache', 'created_at', true);
     await createDatetimeAttribute('tts_cache', 'last_accessed_at', true);
 
-    console.log('\n🎉 Appwrite database setup completed successfully!');
+    console.log('\n🎉 Appwrite TTS Cache collection setup completed successfully!');
     console.log('\n📝 Next steps:');
-    console.log('1. Create the storage bucket "tts_cache" in Appwrite Console');
+    console.log('1. Ensure your S3 bucket is configured and accessible');
     console.log('2. Update your .env file with the correct credentials');
     console.log('3. Test your application');
 
