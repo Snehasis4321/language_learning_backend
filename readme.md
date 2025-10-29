@@ -22,18 +22,42 @@ This backend powers a language learning application designed to help users impro
 
 ## Tech Stack
 
-### Third-Party Services
+### Core Frameworks & Runtime
+
+- **[Node.js](https://nodejs.org/)** >= 20.x - JavaScript runtime
+- **[Express.js](https://expressjs.com/)** - Web framework for Node.js
+- **[TypeScript](https://www.typescriptlang.org/)** - Typed JavaScript for better development experience
+
+### AI & Voice Services
 
 - **[Cerebras API](https://cerebras.ai/)** - LLaMA 3.3 70B model for AI teacher intelligence
-- **[Cartesia API](https://cartesia.ai/)** - Speech-to-Text (STT) and Text-to-Speech (TTS) capabilities
-- **[LiveKit](https://livekit.io/)** - Real-time agent framework for voice conversations
+- **[Cartesia API](https://cartesia.ai/)** - High-quality Text-to-Speech (TTS) with Sonic-2 model
+- **[Deepgram API](https://deepgram.com/)** - Speech-to-Text (STT) with Nova-2 model
+- **[LiveKit Agents](https://docs.livekit.io/agents/overview/)** - Real-time AI agent framework for voice conversations
 
-### Frameworks & Technologies
+### Database & Storage
 
-- **Backend**: Express.js (Node.js)
-- **Frontend**: Next.js
-- **Authentication**: Firebase Auth
-- **Database**: PostgreSQL
+- **[PostgreSQL](https://www.postgresql.org/)** >= 13.x - Primary relational database
+- **[Appwrite](https://appwrite.io/)** - Backend-as-a-Service for user management and file storage
+
+- **[Helmet](https://helmetjs.github.io/)** - Security middleware for Express.js
+- **[CORS](https://expressjs.com/en/resources/middleware/cors.html)** - Cross-origin resource sharing
+
+### Development Tools
+
+- **[TSX](https://tsx.is/)** - TypeScript execution and REPL
+- **[ESLint](https://eslint.org/)** - Code linting with TypeScript support
+- **[Prettier](https://prettier.io/)** - Code formatting
+- **[Jest](https://jestjs.io/)** - Testing framework
+- **[Docker](https://www.docker.com/)** - Containerization
+- **[LiveKit CLI](https://docs.livekit.io/cli/)** - LiveKit development and deployment tools
+
+### Additional Libraries
+
+- **[Axios](https://axios-http.com/)** - HTTP client for API requests
+- **[UUID](https://github.com/uuidjs/uuid)** - Unique identifier generation
+- **[Form-Data](https://www.npmjs.com/package/form-data)** - Multipart form data handling
+- **[pg](https://node-postgres.com/)** - PostgreSQL client for Node.js
 
 ## Prerequisites
 
@@ -80,18 +104,56 @@ LIVEKIT_URL=wss://your-livekit-url
 
 ## Running the Application
 
+### Development
+
 ```bash
-# Development mode
+# Start the main backend server with hot reload
 npm run dev
 
-# Production mode
+# Start the LiveKit agent worker separately
+npm run dev:agent
+
+# Run both server and agent concurrently (requires additional setup)
+npm run dev && npm run dev:agent
+```
+
+### Production
+
+```bash
+# Build the TypeScript code
+npm run build
+
+# Start the compiled server
 npm start
 
+# Start the agent worker
+npm run start:agent
+```
+
+### Testing & Quality
+
+```bash
 # Run tests
 npm test
 
-# Run database migrations
-npm run migrate
+# Lint code
+npm run lint
+
+# Format code with Prettier
+npm run format
+```
+
+### Maintenance Scripts
+
+```bash
+# Set up Appwrite collections and permissions
+npm run setup:appwrite
+
+# Clean up expired LiveKit sessions
+npm run cleanup
+
+# Auto-cleanup with watch mode
+npm run cleanup:watch
 ```
 
 ## Core Features
@@ -144,16 +206,53 @@ Key endpoints include:
 ```
 language_learning_backend/
 ├── src/
-│   ├── controllers/    # Request handlers
-│   ├── models/         # Database models
-│   ├── routes/         # API routes
-│   ├── services/       # Business logic
-│   ├── middleware/     # Custom middleware
-│   ├── utils/          # Utility functions
-│   └── config/         # Configuration files
-├── tests/              # Test files
-├── migrations/         # Database migrations
-└── docs/              # Additional documentation
+│   ├── agent/              # LiveKit agent implementations
+│   │   ├── standalone/     # Standalone agent configurations
+│   │   ├── language-teacher.agent.ts  # Main AI teacher agent
+│   │   └── worker.ts       # Agent worker process
+│   ├── config/             # Configuration files
+│   │   ├── appwrite.ts     # Appwrite client setup
+│   │   ├── database.ts     # Database connection
+│   │   ├── env.ts          # Environment validation
+│   │   └── firebase.ts     # Firebase admin setup
+│   ├── middleware/         # Custom Express middleware
+│   │   ├── appwrite-auth.middleware.ts  # Appwrite authentication
+│   │   └── auth.middleware.ts           # General auth middleware
+│   ├── routes/             # API route handlers
+│   │   ├── appwrite-auth.routes.ts  # Appwrite auth endpoints
+│   │   ├── auth.routes.ts           # Authentication routes
+│   │   ├── conversation.routes.ts   # Conversation management
+│   │   └── user.routes.ts           # User profile routes
+│   ├── services/           # Business logic services
+│   │   ├── agent.service.ts         # Agent management
+│   │   ├── appwrite-auth.service.ts # Appwrite authentication
+│   │   ├── appwrite-db.service.ts   # Appwrite database operations
+│   │   ├── appwrite-storage.service.ts # File storage
+│   │   ├── cartesia.service.ts      # TTS service
+│   │   ├── cerebras.service.ts      # LLM service
+│   │   ├── db.service.ts            # PostgreSQL operations
+│   │   ├── deepgram.service.ts      # STT service
+│   │   ├── livekit.service.ts       # LiveKit room management
+│   │   ├── s3.service.ts            # AWS S3 storage
+│   │   └── user.service.ts          # User management
+│   ├── types/               # TypeScript type definitions
+│   │   ├── conversation.ts  # Conversation types
+│   │   └── user.ts          # User types
+│   ├── agent-worker.ts      # Agent worker entry point
+│   └── index.ts             # Main server entry point
+├── db/                     # Database schema and migrations
+│   └── schema.sql          # PostgreSQL schema
+├── scripts/                # Utility scripts
+│   ├── setup-appwrite.ts   # Appwrite initialization
+│   ├── cleanup-sessions.ts # Session cleanup
+│   └── auto-cleanup.ts     # Automated cleanup
+├── public/                 # Static files
+│   └── test-voice.html     # Voice testing interface
+├── livekit.toml            # LiveKit agent configuration
+├── docker-compose.yml      # Docker services configuration
+├── Dockerfile              # Main application container
+├── Dockerfile.agent        # Agent-specific container
+└── package.json            # Dependencies and scripts
 ```
 
 ## Development
